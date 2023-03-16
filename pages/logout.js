@@ -4,7 +4,7 @@ import { useContext, useEffect } from 'react'
 import { UserContext } from '@/components/UserProvider'
 
 
-export default function logout() {
+export default function Logout() {
   const router = useRouter()
   const {setUser} = useContext(UserContext)
 
