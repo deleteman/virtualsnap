@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
@@ -87,7 +88,8 @@ export default function Signup() {
           Create your account
         </button>
 
-      <span className="login-form-sign-up">or <a href="/login">Log in</a> if you have one already!</span>
+      <span className="login-form-sign-up">or <Link href="/login">Log in</Link> if you have one already!</span>
+      
       </form>
     </div>
   );
