@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { Spinner } from 'react-bootstrap';
 import { UserContext } from '@/components/UserProvider';
 import jwt from 'jsonwebtoken';
+import Link from 'next/link';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -83,9 +84,9 @@ export default function Login() {
         </div>
         {error && <p className="text-danger">{error}</p>}
        <button type="submit" className="btn btn-primary" disabled={loading}>
-        {loading ? <Spinner animation="border" size="sm" /> : 'Enter »'}
+        {loading ? <Spinner animation="border" size="sm" /> : "Enter »"}
       </button>
-      <span className="login-form-sign-up">or <a href="/signup">Sign-up</a> if you haven't yet</span>
+      <span className="login-form-sign-up">or <Link href="/signup">Sign-up</Link> if you haven&apos;t yet</span>
         </form>
         </div>
         );
