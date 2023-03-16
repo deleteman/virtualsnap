@@ -1,7 +1,7 @@
 const MongoClient = require('mongodb').MongoClient;
 
 // Connection URI
-const uri = "mongodb+srv://productai:J2fTLeMkPdk6XmSI@cluster0.kp8xhdr.mongodb.net/?retryWrites=true&w=majority"
+const uri = process.env.MONGO_URL
 
 
 
