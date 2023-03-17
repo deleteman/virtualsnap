@@ -7,11 +7,13 @@ export default function Signup() {
   const [password, setPassword] = useState('');
   const [betaKey, setBetaKey] = useState('');
   const [error, setError] = useState(null);
-
+  const [loading, setLoading] = useState(false);
+ 
   const router = useRouter();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setLoading(true)
     try {
       const response = await fetch('/api/signup', {
         method: 'POST',
@@ -28,10 +30,12 @@ export default function Signup() {
       if(response.status > 201) {
         const error = await response.json()
         console.log(error)
+        setLoading(false)
         return setError(error.message)
       }      
       router.push('/success');
     } catch (error) {
+        setLoading(false)
       setError(error.response.data.message);
     }
   };
@@ -85,11 +89,11 @@ export default function Signup() {
         </div>
         {error && <p className="text-danger">{error}</p>}
         <button type="submit" className="btn btn-primary">
-          Create your account
+            {loading ? <Spinner animation="border" size="sm" /> : "Create your account"}
         </button>
 
       <span className="login-form-sign-up">or <Link href="/login">Log in</Link> if you have one already!</span>
-      
+
       </form>
     </div>
   );

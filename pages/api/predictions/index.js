@@ -11,12 +11,13 @@ let PROMPT_TEMPLATES = {
     'normal': "analog style product photography of [input], [environment], [shot_type], centered:1.9 ,(in frame:1.9)",
     'person': "analog style detailed photo of (a person using [input]):1.8,[environment], product photography, [shot_type] , centered:1.9 ,(in frame:1.9)",
 } 
-const FIXED_NEGATIVES = "blur haze"
+const FIXED_NEGATIVES = "blur, haze, nsfw, naked"
 
 function parseEnvRequirements(env) {
     const envMapping = {
         "random": "",
         "livingroom": "inside the livingroom of a house",
+        "bedroom": "inside the bedroom of a house",
         "backyard": "in the backyard of a house, trees, fence",
         "nature": "out in the woods, trail in nature",
         "table": "on top of a table",
@@ -54,6 +55,11 @@ export default withAuth(async function handler(req, res) {
                 num_inference_steps: DEFAULT_STEPS
             }
 
+    if(req.body.imgSource) {
+        inputObj.image = req.body.imgSource
+        inputObj.prompt_strength = req.body.likeness
+    }
+
     if(req.body.seed != -1) {
         inputObj.seed = req.body.seed
     }
@@ -90,6 +96,11 @@ export default withAuth(async function handler(req, res) {
     }
   
     const prediction = await response.json();
+    //adding original prompt to be used on the front-end
+    prediction.metadata = {
+        original_prompt: req.body.prompt
+    }
+
     res.statusCode = 201;
     res.end(JSON.stringify(prediction));
   }

@@ -2,12 +2,17 @@ import Link from 'next/link';
 
 export default function Success() {
   return (
-    <div className="container">
-      <h1>Signup successful!</h1>
-      <p>You can now log in.</p>
+    <div className="container signup-box">
+        <h1>
+            <img src="/logo.png" className='main-logo' />
+            You're in!
+      </h1>
+      
+      <center>
       <Link href="/login" className="btn btn-primary">
-        Login
+        Enter
       </Link>
+        </center>
     </div>
   );
 }

@@ -25,7 +25,7 @@ export async function updatePhotoURL(userId, photoId, url, isUpscaled) {
     }
 }
 
-export async function savePhoto(userId, prompt, seed, guidance, negative_prompt, url) {
+export async function savePhoto(userId, prompt, seed, guidance, negative_prompt, metadata, url) {
     const conn = await getInstance()
     // Connect to the MongoDB cluster
   
@@ -39,7 +39,8 @@ export async function savePhoto(userId, prompt, seed, guidance, negative_prompt,
         seed,
         guidance_scale: guidance,
         url,
-        negative_prompt
+        negative_prompt,
+        metadata
     };
     
     // Save the record to the MongoDB collection

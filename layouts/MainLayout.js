@@ -21,6 +21,7 @@ export default function Layout({ children, data }) {
        <NavigationBar /> 
       <main className="content">{children}</main>
       <div className='footer bg-dark'></div>
+    
     </div>
   )
 }
