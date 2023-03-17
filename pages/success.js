@@ -5,7 +5,7 @@ export default function Success() {
     <div className="container signup-box">
         <h1>
             <img src="/logo.png" className='main-logo' />
-            You're in!
+            You&apos;re in!
       </h1>
       
       <center>

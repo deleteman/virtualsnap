@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import { Spinner } from 'react-bootstrap';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
