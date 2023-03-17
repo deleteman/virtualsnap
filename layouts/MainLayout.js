@@ -15,6 +15,7 @@ export default function Layout({ children, data }) {
         let u = jwt.decode(localStorage.getItem('jwtToken'))
         console.log(u)
         setUser(u)
+        console.log("user set...")
     }, [])
   return (
     <div className='main-container'>

@@ -6,6 +6,7 @@ import { Button, Spinner, Form } from 'react-bootstrap';
 import cookies from 'next-cookies';
 import { useRouter } from 'next/router';
 import { Tooltip } from 'react-tooltip'
+import ErrorBoundary from '@/components/Boundary'
 
 
 import jwt from 'jsonwebtoken';
@@ -180,8 +181,11 @@ function MyComponent({data}) {
   
   useEffect(() => {
     if(!data) {
+      console.log("there is no data")
       router.push("/login")
     } else {
+      console.log("setting gallery from db")
+      console.log(data)
       setGallery(buildGallery(data))
       console.log("Gallery")
       console.log(gallery)
@@ -361,24 +365,28 @@ function MyComponent({data}) {
       onChange={(e) => setNumberPhotos(e.target.value)}
       />
       </div>
+
+      <ErrorBoundary>
       <Form.Group>
-      <Form.Label>Likeness to selected image (more/less)</Form.Label>
-      <i className="fas fa-question-circle" data-tooltip-id="likeness-tooltip" data-tooltip-html="Select how similar is your <br />new image to the selected one"   data-bs-placement="top" >
-      <svg width="16px" height="16px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zM7.92 9.234v.102a.5.5 0 0 0 .5.5h.997a.499.499 0 0 0 .499-.499c0-1.29.998-1.979 2.34-1.979 1.308 0 2.168.689 2.168 1.67 0 .928-.482 1.359-1.686 1.91l-.344.154C11.379 11.54 11 12.21 11 13.381v.119a.5.5 0 0 0 .5.5h.997a.499.499 0 0 0 .499-.499c0-.516.138-.723.55-.912l.345-.155c1.445-.654 2.529-1.514 2.529-3.39v-.103c0-1.978-1.72-3.441-4.164-3.441-2.478 0-4.336 1.428-4.336 3.734zm2.58 7.757c0 .867.659 1.509 1.491 1.509.85 0 1.509-.642 1.509-1.509 0-.867-.659-1.491-1.509-1.491-.832 0-1.491.624-1.491 1.491z" fill="#808080"></path></g></svg>
-      </i>
+        <Form.Label>Likeness to selected image (more/less)</Form.Label>
+      {/* <a className="fas fa-question-circle" data-tooltip-id="likeness-tooltip" data-tooltip-html="Select how similar is your <br />new image to the selected one"   data-bs-placement="top" >
+        <svg width="16px" height="16px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" strokeWidth="0"></g><g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zM7.92 9.234v.102a.5.5 0 0 0 .5.5h.997a.499.499 0 0 0 .499-.499c0-1.29.998-1.979 2.34-1.979 1.308 0 2.168.689 2.168 1.67 0 .928-.482 1.359-1.686 1.91l-.344.154C11.379 11.54 11 12.21 11 13.381v.119a.5.5 0 0 0 .5.5h.997a.499.499 0 0 0 .499-.499c0-.516.138-.723.55-.912l.345-.155c1.445-.654 2.529-1.514 2.529-3.39v-.103c0-1.978-1.72-3.441-4.164-3.441-2.478 0-4.336 1.428-4.336 3.734zm2.58 7.757c0 .867.659 1.509 1.491 1.509.85 0 1.509-.642 1.509-1.509 0-.867-.659-1.491-1.509-1.491-.832 0-1.491.624-1.491 1.491z" fill="#808080"></path></g></svg>
+        </a>
 
-      <Tooltip id="likeness-tooltip" />
+        <Tooltip id="likeness-tooltip" />
+        */}
 
-      <input type="range" 
-      id="likeness" 
-      name="likeness" 
-      min="0" 
-      max="1" 
-      step="0.01" 
-      value={likeness} 
-      disabled={imgSource == null}
-      onChange={(e) => setLikeness(e.target.value)}/>
+        <input type="range" 
+        id="likeness" 
+        name="likeness" 
+        min="0" 
+        max="1" 
+        step="0.01" 
+        value={likeness} 
+        disabled={imgSource == null}
+        onChange={(e) => setLikeness(e.target.value)}/>
       </Form.Group>
+  </ErrorBoundary>
       <Form.Group>
       <Form.Label>Environment</Form.Label>
       <Form.Select 
@@ -395,6 +403,7 @@ function MyComponent({data}) {
       <option value="cube">On top of a cube</option>
       <option value="plain">Plain background</option>
       </Form.Select>
+
       </Form.Group>
       <div className="form-group">
       <label htmlFor="number_photos">Add your own product:</label>
@@ -416,7 +425,7 @@ function MyComponent({data}) {
 
 
    <button className="btn btn-secondary float-left" disabled={loading} onClick={resetParameters}>
-      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 512 512"><path fill="#fff" fill-rule="evenodd" d="M426.667 106.667v42.666L358 149.33c36.077 31.659 58.188 77.991 58.146 128.474-.065 78.179-53.242 146.318-129.063 165.376-75.82 19.058-154.895-15.838-191.92-84.695C58.142 289.63 72.638 204.42 130.348 151.68a85.333 85.333 0 0 0 33.28 30.507 124.587 124.587 0 0 0-46.294 97.066c1.05 69.942 58.051 126.088 128 126.08 64.072 1.056 118.709-46.195 126.906-109.749 6.124-47.483-15.135-92.74-52.237-118.947L320 256h-42.667V106.667h149.334ZM202.667 64c23.564 0 42.666 19.103 42.666 42.667s-19.102 42.666-42.666 42.666c-23.564 0-42.667-19.102-42.667-42.666C160 83.103 179.103 64 202.667 64Z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 512 512"><path fill="#fff" fillRule="evenodd" d="M426.667 106.667v42.666L358 149.33c36.077 31.659 58.188 77.991 58.146 128.474-.065 78.179-53.242 146.318-129.063 165.376-75.82 19.058-154.895-15.838-191.92-84.695C58.142 289.63 72.638 204.42 130.348 151.68a85.333 85.333 0 0 0 33.28 30.507 124.587 124.587 0 0 0-46.294 97.066c1.05 69.942 58.051 126.088 128 126.08 64.072 1.056 118.709-46.195 126.906-109.749 6.124-47.483-15.135-92.74-52.237-118.947L320 256h-42.667V106.667h149.334ZM202.667 64c23.564 0 42.666 19.103 42.666 42.667s-19.102 42.666-42.666 42.666c-23.564 0-42.667-19.102-42.667-42.666C160 83.103 179.103 64 202.667 64Z"/></svg>
       Reset
     </button>
 
@@ -424,7 +433,7 @@ function MyComponent({data}) {
       <button type="submit" className="btn btn-primary float-right" disabled={loading}>
       {loading ? <Spinner animation="border" size="sm" /> : 
       <>
-      <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff"><g id="SVGRepo_bgCarrier" strokeWidth="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path opacity="0.1" fill-rule="evenodd" clipRule="evenodd" d="M18.3945 7H18.3944C18.079 7 17.9213 7 17.7739 6.9779C17.3177 6.90952 16.8991 6.6855 16.5891 6.34382C16.4889 6.23342 16.4015 6.1022 16.2265 5.83975L16 5.5C15.6036 4.90544 15.4054 4.60816 15.1345 4.40367C14.9691 4.27879 14.7852 4.18039 14.5895 4.112C14.2691 4 13.9118 4 13.1972 4H10.8028C10.0882 4 9.73092 4 9.41048 4.112C9.2148 4.18039 9.03094 4.27879 8.86549 4.40367C8.59456 4.60816 8.39637 4.90544 8 5.5L7.7735 5.83975C7.59853 6.1022 7.51105 6.23342 7.4109 6.34382C7.10092 6.6855 6.68235 6.90952 6.2261 6.9779C6.07869 7 5.92098 7 5.60555 7H5.60554C5.04256 7 4.76107 7 4.52887 7.05628C3.80101 7.2327 3.23271 7.801 3.05628 8.52887C3 8.76107 3 9.04256 3 9.60555V16C3 17.8856 3 18.8284 3.58579 19.4142C4.17157 20 5.11438 20 7 20H8L16 20H17C18.8856 20 19.8284 20 20.4142 19.4142C21 18.8284 21 17.8856 21 16V9.60555C21 9.04256 21 8.76107 20.9437 8.52887C20.7673 7.801 20.199 7.2327 19.4711 7.05628C19.2389 7 18.9574 7 18.3945 7ZM12 16C13.6569 16 15 14.6569 15 13C15 11.3431 13.6569 10 12 10C10.3431 10 9 11.3431 9 13C9 14.6569 10.3431 16 12 16Z" fill="#ffffff"></path> <path d="M18.3944 7C18.9574 7 19.2389 7 19.4711 7.05628C20.199 7.2327 20.7673 7.801 20.9437 8.52887C21 8.76107 21 9.04256 21 9.60555L21 16C21 17.8856 21 18.8284 20.4142 19.4142C19.8284 20 18.8856 20 17 20L16 20L8 20L7 20C5.11438 20 4.17157 20 3.58579 19.4142C3 18.8284 3 17.8856 3 16L3 9.60555C3 9.04256 3 8.76107 3.05628 8.52887C3.23271 7.801 3.80101 7.2327 4.52887 7.05628C4.76107 7 5.04257 7 5.60555 7V7C5.92098 7 6.07869 7 6.2261 6.9779C6.68235 6.90952 7.10092 6.6855 7.4109 6.34382C7.51105 6.23342 7.59853 6.1022 7.7735 5.83975L8 5.5C8.39637 4.90544 8.59456 4.60816 8.86549 4.40367C9.03094 4.27879 9.2148 4.18039 9.41048 4.112C9.73092 4 10.0882 4 10.8028 4L13.1972 4C13.9118 4 14.2691 4 14.5895 4.112C14.7852 4.18039 14.9691 4.27879 15.1345 4.40367C15.4054 4.60816 15.6036 4.90544 16 5.5L16.2265 5.83975C16.4015 6.1022 16.4889 6.23342 16.5891 6.34382C16.8991 6.6855 17.3177 6.90952 17.7739 6.9779C17.9213 7 18.079 7 18.3944 7V7Z" stroke="#ffffff" strokeWidth="2" stroke-linejoin="round"></path> <path d="M15 13C15 14.6569 13.6569 16 12 16C10.3431 16 9 14.6569 9 13C9 11.3431 10.3431 10 12 10C13.6569 10 15 11.3431 15 13Z" stroke="#ffffff" strokeWidth="2"></path> </g></svg>
+      <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#ffffff"><g id="SVGRepo_bgCarrier" strokeWidth="0"></g><g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g><g id="SVGRepo_iconCarrier"> <path opacity="0.1" fillRule="evenodd" clipRule="evenodd" d="M18.3945 7H18.3944C18.079 7 17.9213 7 17.7739 6.9779C17.3177 6.90952 16.8991 6.6855 16.5891 6.34382C16.4889 6.23342 16.4015 6.1022 16.2265 5.83975L16 5.5C15.6036 4.90544 15.4054 4.60816 15.1345 4.40367C14.9691 4.27879 14.7852 4.18039 14.5895 4.112C14.2691 4 13.9118 4 13.1972 4H10.8028C10.0882 4 9.73092 4 9.41048 4.112C9.2148 4.18039 9.03094 4.27879 8.86549 4.40367C8.59456 4.60816 8.39637 4.90544 8 5.5L7.7735 5.83975C7.59853 6.1022 7.51105 6.23342 7.4109 6.34382C7.10092 6.6855 6.68235 6.90952 6.2261 6.9779C6.07869 7 5.92098 7 5.60555 7H5.60554C5.04256 7 4.76107 7 4.52887 7.05628C3.80101 7.2327 3.23271 7.801 3.05628 8.52887C3 8.76107 3 9.04256 3 9.60555V16C3 17.8856 3 18.8284 3.58579 19.4142C4.17157 20 5.11438 20 7 20H8L16 20H17C18.8856 20 19.8284 20 20.4142 19.4142C21 18.8284 21 17.8856 21 16V9.60555C21 9.04256 21 8.76107 20.9437 8.52887C20.7673 7.801 20.199 7.2327 19.4711 7.05628C19.2389 7 18.9574 7 18.3945 7ZM12 16C13.6569 16 15 14.6569 15 13C15 11.3431 13.6569 10 12 10C10.3431 10 9 11.3431 9 13C9 14.6569 10.3431 16 12 16Z" fill="#ffffff"></path> <path d="M18.3944 7C18.9574 7 19.2389 7 19.4711 7.05628C20.199 7.2327 20.7673 7.801 20.9437 8.52887C21 8.76107 21 9.04256 21 9.60555L21 16C21 17.8856 21 18.8284 20.4142 19.4142C19.8284 20 18.8856 20 17 20L16 20L8 20L7 20C5.11438 20 4.17157 20 3.58579 19.4142C3 18.8284 3 17.8856 3 16L3 9.60555C3 9.04256 3 8.76107 3.05628 8.52887C3.23271 7.801 3.80101 7.2327 4.52887 7.05628C4.76107 7 5.04257 7 5.60555 7V7C5.92098 7 6.07869 7 6.2261 6.9779C6.68235 6.90952 7.10092 6.6855 7.4109 6.34382C7.51105 6.23342 7.59853 6.1022 7.7735 5.83975L8 5.5C8.39637 4.90544 8.59456 4.60816 8.86549 4.40367C9.03094 4.27879 9.2148 4.18039 9.41048 4.112C9.73092 4 10.0882 4 10.8028 4L13.1972 4C13.9118 4 14.2691 4 14.5895 4.112C14.7852 4.18039 14.9691 4.27879 15.1345 4.40367C15.4054 4.60816 15.6036 4.90544 16 5.5L16.2265 5.83975C16.4015 6.1022 16.4889 6.23342 16.5891 6.34382C16.8991 6.6855 17.3177 6.90952 17.7739 6.9779C17.9213 7 18.079 7 18.3944 7V7Z" stroke="#ffffff" strokeWidth="2" strokeLinejoin="round"></path> <path d="M15 13C15 14.6569 13.6569 16 12 16C10.3431 16 9 14.6569 9 13C9 11.3431 10.3431 10 12 10C13.6569 10 15 11.3431 15 13Z" stroke="#ffffff" strokeWidth="2"></path> </g></svg>
       Start snapping!
       </>
     }
@@ -435,7 +444,8 @@ function MyComponent({data}) {
     { /* right column */ }
     <div className="col-md-8">
     <div className="row" id="image-gallery">
-    {gallery && gallery.map( (photo,idx) => {
+      <ErrorBoundary>
+    {gallery.length > 0 && gallery.map( (photo,idx) => {
       return (
         <div className="col-md-4" key={"container-" + photo._id}>
         <SDPhoto status={photo.status} 
@@ -448,7 +458,7 @@ function MyComponent({data}) {
           />
         </div>
         )
-      })}
+      })}</ErrorBoundary>
       </div>
       </div>
       </div>
