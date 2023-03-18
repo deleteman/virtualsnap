@@ -74,8 +74,16 @@ async function savePermanentPhoto(p, input) {
       prompt_input: input
     })
   })
-  
+
   let jsonRes = await res.json()
+
+  if(res.status > 201) {
+    return {
+      error: true, 
+      message: jsonRes.error
+    }
+  }
+
   return {
     url: jsonRes.url,
     id: jsonRes.saved_to_db
@@ -95,9 +103,14 @@ async function predictionDone(prediction, setError ) {
     try {
       for (let photo of newPhotos) {
         let d = await savePermanentPhoto(photo, prediction.input)
-        photo.path = d.url;
-        photo.url = d.url;
-        photo._id = d.id
+        if(d.error){
+          setError(d.message)
+          p.error = true
+        } else {
+          photo.path = d.url;
+          photo.url = d.url;
+          photo._id = d.id
+        }       
       }
     } catch (e) {
       console.log("Error saving photos")
@@ -276,7 +289,8 @@ function MyComponent({data}) {
         let temp = [] 
         placeholders.forEach( gphoto => {
           if(gphoto.status == "pending") {
-            temp.push(res.shift())
+            let p = res.shift()
+            temp.push(p.error ? gphoto : p)
           } else {
             temp.push(gphoto)
           }            
