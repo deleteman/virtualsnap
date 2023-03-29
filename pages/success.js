@@ -10,7 +10,7 @@ export default function Success() {
       
       <center>
       <Link href="/login" className="btn btn-primary">
-        Enter
+        Log in now »
       </Link>
         </center>
     </div>

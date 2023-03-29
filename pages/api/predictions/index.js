@@ -5,11 +5,12 @@ import { withAuth } from "../middleware/auth";
 
 //realistic vision
 const modelVersion = "db1c4227cbc7f985e335b2f0388cd6d3aa06d95087d6a71c5b3e07413738fa13"
-const DEFAULT_STEPS = 50
+const DEFAULT_STEPS = 150
 
 let PROMPT_TEMPLATES = {
-    'normal': "analog style product photography of [input], [environment], [shot_type], centered:1.9 ,(in frame:1.9)",
-    'person': "analog style detailed photo of (a person using [input]):1.8,[environment], product photography, [shot_type] , centered:1.9 ,(in frame:1.9)",
+    //'normal': "analog style product photography of <1>, [environment], [shot_type], centered:1.9 ,(in frame:1.9)",
+    'normal': "product photography of [input], [environment], [shot_type], centered:1.9 ,(in frame:1.9),bokeh, uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3",
+    'person': "detailed photo of (a person using [input]):1.8,[environment], product photography, [shot_type] , centered:1.9 ,(in frame:1.9), bokeh, uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3",
 } 
 const FIXED_NEGATIVES = "blur, haze, nsfw, naked"
 
@@ -31,11 +32,25 @@ function parseEnvRequirements(env) {
     return ""
 }
 
+function getShotType(shotType) {
+    if(shotType == 'wide') {
+        return '(wide shot:1.8)' 
+    }
+    if(shotType == 'closeup') {
+        return '(closeup shot:1.8)'
+    }
+
+    if(shotType == 'extra-wide') {
+        return '(extra wide shot:1.8)'
+    }
+
+}
+
 function getFinalPrompt({prompt, usedByPerson, shotType, env}) {
     return PROMPT_TEMPLATES[usedByPerson ? 'person' : 'normal']
             .replace("[input]", prompt)
             .replace("[environment]", parseEnvRequirements(env))
-            .replace("[shot_type]", (shotType == 'wide') ? 'wide shot' : '(closeup shot:1.8)')
+            .replace("[shot_type]", getShotType(shotType))
 }
 
 export default withAuth(async function handler(req, res) {
@@ -52,7 +67,9 @@ export default withAuth(async function handler(req, res) {
                 guidance_scale: req.body.guidanceNumber,
                 num_outputs: req.body.numberPhotos,
                 negative_prompt: `${FIXED_NEGATIVES}, ${negatives.join(",")}`,
-                num_inference_steps: DEFAULT_STEPS
+                num_inference_steps: DEFAULT_STEPS,
+               // lora_urls:  'https://replicate.delivery/pbxt/xy5oy6tstMaaDRnJVuqKehcNP3B48vKp5xg0sOzEWWXlsuUIA/tmp8trorbpcmacrame-teepeezip.safetensors'
+                //lora_scales: 0.5
             }
 
     if(req.body.imgSource) {

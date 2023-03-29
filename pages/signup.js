@@ -24,7 +24,7 @@ export default function Signup() {
         body: JSON.stringify({
             email,
             password,
-            betaKey,
+            //betaKey,
         })
       }
       );
@@ -75,7 +75,7 @@ export default function Signup() {
             required
           />
         </div>
-        <div className="mb-3">
+    {/*    <div className="mb-3">
           <label htmlFor="betaKey" className="form-label">
             Beta access key
           </label>
@@ -88,6 +88,7 @@ export default function Signup() {
             required
           />
         </div>
+  */}
         {error && <p className="text-danger">{error}</p>}
         <button type="submit" className="btn btn-primary">
             {loading ? <Spinner animation="border" size="sm" /> : "Create your account"}

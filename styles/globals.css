@@ -81,6 +81,7 @@ main {
 .container.login-box ,
 .container.signup-box {
   width: 25%;
+  padding: 10px;
 }
 .container.login-box form,
 .container.signup-box form{
@@ -189,4 +190,30 @@ input[type="range"]:disabled::-webkit-slider-thumb {
   background-color: #bbb;
   border-radius: 50%;
   cursor: pointer;
+}
+.original-product-gallery {
+  display: flex;
+  padding: 10px;
+  border: 1px dashed;
+  margin: 5px;
+  justify-content:center;
+}
+
+.product-preview-photo-wrapper {
+  max-width: 100px;
+  border: 2px dotted #c8bebe;
+  padding: 5px;
+  background: #fff;
+  margin-left: 5px;
+}
+
+img.product-preview-photo {
+  max-width: 100%;
+}
+
+.new-product-error-msg {
+  padding: 20px;
+  color: #d33f3f;
+  border: 3px solid #b88989;
+  background: #f5e3e6;
 }

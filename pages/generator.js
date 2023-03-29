@@ -349,6 +349,15 @@ function MyComponent({data}) {
       value="shot-type-wide"
       onChange={() => setShotType("wide")}
       />
+    <Form.Check
+      type="radio"
+      inline
+      label="Extra wide shot"
+      name="shot-type"
+      id="shot-type-extrawide"
+      value="shot-type-extrawide"
+      onChange={() => setShotType("extra-wide")}
+      />
       
       <Form.Text
       type="number"
