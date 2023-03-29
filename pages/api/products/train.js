@@ -38,7 +38,7 @@ import formidable from 'formidable';
 import { v4 as uuidv4 } from 'uuid';
 import firebase from 'firebase/app';
 import 'firebase/storage';
-import { connectToDatabase } from './utils/mongodb';
+import { getInstance } from '@/utils/mongoClient';
 
 export const config = {
   api: {
@@ -69,7 +69,7 @@ const handler = async (req, res) => {
     return;
   }
 
-  const { db } = await connectToDatabase();
+  const { db } = await getInstance()
 
   const form = new formidable.IncomingForm();
   form.parse(req, async (err, fields, files) => {
