@@ -1,3 +1,4 @@
+/*
 import formidable from "formidable";
 import fs from "fs";
 
@@ -30,6 +31,7 @@ export default async (req, res) => {
     return;
   }
 };
+*/
 
 /////////
 import formidable from 'formidable';
