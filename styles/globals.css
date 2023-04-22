@@ -217,3 +217,56 @@ img.product-preview-photo {
   border: 3px solid #b88989;
   background: #f5e3e6;
 }
+
+/* product generator */
+
+.product-list-container {
+ border-top: 1px solid #ffc173; 
+ padding-top: 10px;
+}
+
+.product-list {
+  padding-left: 0px;
+}
+
+.product-list li {
+    display: flex;
+    flex-direction: row;
+    padding: 10px;
+}
+
+.product-list li.odd {
+  background-color: #cfdcdf;
+}
+.product-list li.even{
+  background-color: #f3f3f3;
+}
+
+
+
+.product-list .product-name {
+    max-width: 100px;
+    /* vertical-align: middle; */
+}
+.product-photos img {
+    max-width: 50px;
+}
+
+.product-status span {
+    padding: 3px 6px;
+    border-radius: 40px;
+    font-weight: bold;
+    margin: 5px;
+}
+
+.product-status.training span{
+  background-color: rgb(232, 199, 78);
+}
+.product-status.failed span{
+  background-color: rgb(205, 75, 20);
+  color: white;
+}
+.product-status.succeeded span {
+  background-color: rgb(46, 156, 66);
+  color: white;
+}

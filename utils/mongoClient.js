@@ -16,7 +16,7 @@ export async function getInstance() {
         try {
             conn = await client.connect()
             console.log("Conection")
-            console.log(conn)
+            //console.log(conn)
         } catch (connErr) {
             console.log("== Error connecting to db")
             console.error(connErr)

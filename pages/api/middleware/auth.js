@@ -5,7 +5,8 @@ export function withAuth(handler) {
   return async (req, res) => {
     let decodedData = null;
     try {
-      console.log("Validating token: ", req.headers)
+      console.log("Validating token...: ")
+      //console.log("Validating token...: ", req.headers)
       const token = req.headers.authorization.split(' ')[1];
 
       if (!token) {

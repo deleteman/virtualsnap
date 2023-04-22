@@ -1,11 +1,98 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ProductPreview from '@/components/ProductPreview';
 import { Alert, Modal } from 'react-bootstrap';
+import ProductList from '@/components/ProductList';
+import {getUserProducts} from '@/utils/userUtils';
+import { Spinner } from 'react-bootstrap';
+import jwt from 'jsonwebtoken';
 
-const CreateProductForm = () => {
+export async function getServerSideProps(context) {
+
+  const {req} = context
+  //console.log(req.cookies)
+  const token = req.cookies['jwtToken']
+  //console.log("token. ", token)
+  const usrData = jwt.decode(token)
+
+  if(!usrData) {
+    console.log("No user information found on token...")
+    return {
+      props: {
+        productList: []
+      }
+    }
+  }
+
+  const products = await getUserProducts(usrData.id)
+  const serialProducts = products.map( p => {
+    let photos = p.photos;
+    return {
+      name: p.name, 
+      id: p._id.toString(),
+      replicate_id: p.replicate_id || null   ,
+      status: p.status || null,
+      photos: photos.map( photo => photo.url)
+    }
+  })
+
+  //console.log(JSON.stringify(products))
+  return {
+    props: {
+      productList: serialProducts
+    }
+  }
+}
+
+function watchPendingTraining(pid, tid, updateCb) {
+  if(tid == '' || !tid) return;
+ const interval = setInterval(async () => {
+  console.log("Checking status of product: ", pid)
+  const trainingRes = await fetch(`/api/products/${tid}`, {
+     headers: {
+          'Authorization': 'Bearer: ' + localStorage.getItem('jwtToken')
+        },
+  }
+  )
+  const resObj = await trainingRes.json()
+  if(resObj.status == "succeeded" || resObj.status == "failed") {
+    console.log("Status update ready, changing to: ", resObj.status)
+    updateCb(pid, resObj.status)
+    clearInterval(interval)
+  }
+ }, 1000)
+}
+
+
+const CreateProductForm = ({productList}) => {
   const [name, setName] = useState('');
   const [photos, setPhotos] = useState([]);
   const [validationError, setValidationError] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [creating, setCreating] = useState(false)
+
+  function updateProductStatus(id, status) {
+    let newProductList = products.map( p => {
+      if(p.id != id) return p;
+      p.status = status;
+      return p;
+    })
+    setProducts(newProductList)
+  }
+
+  useEffect( () => {
+    products.forEach( p => {
+      if(p.status == "training") {
+        watchPendingTraining(p.id, p.replicate_id, updateProductStatus)
+      } 
+    })
+ 
+  },[products])
+
+  useEffect( () => {
+    console.log("Setting product list from backend data...")
+    console.log(productList)
+    setProducts(productList)
+ }, [])
 
   const handleNameChange = (event) => {
     setName(event.target.value);
@@ -25,6 +112,7 @@ const CreateProductForm = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setCreating(true)
 
     if(name == "") {
         return setValidationError("The name of the product is mandatory")
@@ -39,10 +127,24 @@ const CreateProductForm = () => {
     try {
       const response = await fetch('/api/products/train', {
         method: 'POST',
-        body: formData
+        body: formData,
+        headers: {
+          'Authorization': 'Bearer: ' + localStorage.getItem('jwtToken')
+        },
+ 
       });
-      console.log(await response.json());
+      const respJSON = await response.json()
+      if(response.status >= 200 && response.status < 300) {
+        setProducts([...products, respJSON.product])
+      } else {
+        setValidationError(error.message)
+      }
+      setCreating(false)
+      console.log("Response received")
+      console.log(respJSON);
     } catch (error) {
+      setCreating(false)
+      setValidationError(error.message)
       console.error(error);
     }
   };
@@ -95,10 +197,14 @@ const CreateProductForm = () => {
         }
       </div>
       <button type="submit" className="btn btn-primary">
-        Create Product
+            {creating ? <Spinner animation="border" size="sm" /> : "Create product"}
       </button>
     </form>
             </div>
+        </div>
+        <div className='product-list-container'>
+          <h2>Existing products</h2>
+          <ProductList products={products} />
         </div>
     </div>
  

@@ -1,4 +1,5 @@
 import { withAuth } from "../middleware/auth";
+import { getLoraURL } from "@/utils/productUtils";
 
 //analog photograph
 //const modelVersion = "1f7f51e8b2e43ade14fb7d6d62385854477e078ac870778aafecf70c0a6de006"
@@ -46,24 +47,41 @@ function getShotType(shotType) {
 
 }
 
-function getFinalPrompt({prompt, usedByPerson, shotType, env}) {
-    return PROMPT_TEMPLATES[usedByPerson ? 'person' : 'normal']
+
+
+async function getFinalPrompt({prompt, usedByPerson, shotType, env}) {
+    const productNameRegExp = /\{([a-zA-Z 0-9]+)\}/
+    let text = PROMPT_TEMPLATES[usedByPerson ? 'person' : 'normal']
             .replace("[input]", prompt)
             .replace("[environment]", parseEnvRequirements(env))
             .replace("[shot_type]", getShotType(shotType))
+        
+    let matches = productNameRegExp.exec(text);
+
+    let ret = {
+        prompt: text,
+        lora: null
+    }
+
+    if(matches != null) {
+        let lora_url = await getLoraURL(matches[1])
+        ret.prompt = ret.prompt.replace(matches[0], "<1>")
+        ret.lora = lora_url
+    }
+    return ret;
 }
 
 export default withAuth(async function handler(req, res) {
     let response = "";
 
     let negatives = req.body.negatives.split(",")
-    console.log(req.body.usedByPerson)
     if(!req.body.usedByPerson) {
         negatives.push("people", "woman", "man", "feet", "hand", "legs")
     }
-
+    
+    let prompt = await getFinalPrompt({prompt: req.body.prompt, usedByPerson: req.body.usedByPerson, shotType: req.body.shotType, env: req.body.environment});
     let inputObj = { 
-                prompt: getFinalPrompt({prompt: req.body.prompt, usedByPerson: req.body.usedByPerson, shotType: req.body.shotType, env: req.body.environment}) ,
+                prompt: prompt.prompt,
                 guidance_scale: req.body.guidanceNumber,
                 num_outputs: req.body.numberPhotos,
                 negative_prompt: `${FIXED_NEGATIVES}, ${negatives.join(",")}`,
@@ -71,6 +89,11 @@ export default withAuth(async function handler(req, res) {
                // lora_urls:  'https://replicate.delivery/pbxt/xy5oy6tstMaaDRnJVuqKehcNP3B48vKp5xg0sOzEWWXlsuUIA/tmp8trorbpcmacrame-teepeezip.safetensors'
                 //lora_scales: 0.5
             }
+        
+    if(prompt.lora) {
+        inputObj.lora_urls = prompt.lora
+        inputObj.lora_scales = 0.3;
+    }
 
     if(req.body.imgSource) {
         inputObj.image = req.body.imgSource
@@ -115,7 +138,8 @@ export default withAuth(async function handler(req, res) {
     const prediction = await response.json();
     //adding original prompt to be used on the front-end
     prediction.metadata = {
-        original_prompt: req.body.prompt
+        original_prompt: req.body.prompt,
+        full_input: inputObj
     }
 
     res.statusCode = 201;

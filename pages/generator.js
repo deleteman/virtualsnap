@@ -1,7 +1,7 @@
 import ErrorModal from '@/components/ErrorModal';
 import { SDPhoto } from '@/components/SDPhoto';
 import { getUserPhotos } from '@/utils/getUserPhotos';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { Button, Spinner, Form } from 'react-bootstrap';
 import cookies from 'next-cookies';
 import { useRouter } from 'next/router';
@@ -178,7 +178,7 @@ function MyComponent({data}) {
   
   const { user }  = useContext(UserContext)
   
-  const [productPrompt, setProductPrompt] = useState('');
+  //const [productPrompt, setProductPrompt] = useState('');
   const [guidanceNumber, setGuidanceNumber] = useState(9);
   const [negatives, setNegatives] = useState('');
   const [usedByPerson, setUsedByPerson] = useState(false);
@@ -191,6 +191,7 @@ function MyComponent({data}) {
   const [seed, setSeed] = useState(DEFAULT_SEED);
   const [imgSource, setImgSource] = useState(DEFAULT_IMG_SOURCE);
   const [likeness, setLikeness] = useState(DEFAULT_LIKENESS);
+  const refPrompt = useRef()
   
   useEffect(() => {
     if(!data) {
@@ -229,7 +230,8 @@ function MyComponent({data}) {
     if(e) e.preventDefault();
     setLoading(true)
     const response = await makeRequest({
-      productPrompt,
+      ///productPrompt,
+      productPrompt: refPrompt.current.value,
       guidanceNumber,
       negatives,
       numberPhotos,
@@ -314,12 +316,12 @@ function MyComponent({data}) {
       <Form onSubmit={handleSubmit}>
       <div className="form-group">
       <label htmlFor="product-prompt">Describe your product:</label>
+
       <textarea
       className="form-control"
       placeholder="Describe your product with as much detail as you can..."
       id="product-prompt"
-      value={productPrompt}
-      onChange={(e) => setProductPrompt(e.target.value)}
+      ref={refPrompt}
       />
       
       </div>
