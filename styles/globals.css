@@ -1,3 +1,13 @@
+
+span.app-tooltip {
+    border: 2px solid #999;
+    padding: 0px 5px;
+    border-radius: 25px;
+    margin: 3px;
+    font-weight: bold;
+    background-color: #ddd;
+}
+
 .position-relative {
   position: relative;
 }
@@ -134,6 +144,11 @@ textarea::placeholder {
   font-style: italic;
 }
 
+.navbar-nav a {
+    padding-right: 5px;
+    color: #eee;
+}
+
 .main-container {
   display: flex;
   flex-direction: column;
@@ -142,6 +157,10 @@ textarea::placeholder {
 
 .content {
   flex: 1 !important;
+}
+
+.current-page {
+  background-color: #ccc;
 }
 
 .footer {
@@ -223,6 +242,7 @@ img.product-preview-photo {
 .product-list-container {
  border-top: 1px solid #ffc173; 
  padding-top: 10px;
+ padding-bottom: 20px;
 }
 
 .product-list {
@@ -248,12 +268,19 @@ img.product-preview-photo {
     max-width: 100px;
     /* vertical-align: middle; */
 }
+.product-list .product-name .text{
+  display: block;
+  text-align: center;
+}
+
 .product-photos img {
     max-width: 50px;
+        margin: 10px;
+    box-shadow: 5px 5px 2px #7f7c7c;
 }
 
 .product-status span {
-    padding: 3px 6px;
+    padding: 2px 10px;
     border-radius: 40px;
     font-weight: bold;
     margin: 5px;
@@ -269,4 +296,69 @@ img.product-preview-photo {
 .product-status.succeeded span {
   background-color: rgb(46, 156, 66);
   color: white;
+}
+
+
+
+
+
+/* quill mention*/
+.ql-mention-list-container {
+  width: 270px;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 12px 0 rgba(30, 30, 30, 0.08);
+  z-index: 9001;
+  overflow: auto;
+}
+
+.ql-mention-loading {
+  line-height: 44px;
+  padding: 0 20px;
+  vertical-align: middle;
+  font-size: 16px;
+}
+
+.ql-mention-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.ql-mention-list-item {
+  cursor: pointer;
+  line-height: 44px;
+  font-size: 16px;
+  padding: 0 20px;
+  vertical-align: middle;
+}
+
+.ql-mention-list-item.disabled {
+  cursor: auto;
+}
+
+.ql-mention-list-item.selected {
+  background-color: #d3e1eb;
+  text-decoration: none;
+}
+
+.mention {
+  height: 24px;
+  width: 65px;
+  border-radius: 6px;
+  background-color: #d3e1eb;
+  padding: 3px 0;
+  margin-right: 2px;
+  user-select: all;
+}
+
+.mention > span {
+  margin: 0 3px;
+}
+
+.quill {
+  height: 150px;
+  background-color: white;
 }

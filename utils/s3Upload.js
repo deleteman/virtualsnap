@@ -27,7 +27,9 @@ export const uploadFile = async (file, retry = 0) => {
     Key: filename,
     Body: fileContent,
     ACL:'public-read'
-  }
+  } 
+  console.log("Data:")
+  console.log(params)
   
   try {
     const data = await s3.upload(params).promise()

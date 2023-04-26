@@ -1,4 +1,5 @@
 module.exports = {
+  swcMinify: false,
   reactStrictMode: true,
   images: {
     remotePatterns: [

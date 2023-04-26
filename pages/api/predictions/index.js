@@ -6,14 +6,19 @@ import { getLoraURL } from "@/utils/productUtils";
 
 //realistic vision
 const modelVersion = "db1c4227cbc7f985e335b2f0388cd6d3aa06d95087d6a71c5b3e07413738fa13"
-const DEFAULT_STEPS = 150
+const DEFAULT_STEPS = 50
+const DEFAULT_WIDTH=768
+const DEFAULT_LORA_SCALE = 0.6
+const DEFAULT_SCHEDULER="DDIM"
+
 
 let PROMPT_TEMPLATES = {
     //'normal': "analog style product photography of <1>, [environment], [shot_type], centered:1.9 ,(in frame:1.9)",
-    'normal': "product photography of [input], [environment], [shot_type], centered:1.9 ,(in frame:1.9),bokeh, uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3",
-    'person': "detailed photo of (a person using [input]):1.8,[environment], product photography, [shot_type] , centered:1.9 ,(in frame:1.9), bokeh, uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3",
+    'normal': "masterpiece, product photography of [input], [environment], [shot_type], centered:1.9 ,(in frame:1.9),bokeh, uhd, dslr, soft lighting, (high quality:1.8),  Fujifilm XT3",
+    'normal_wide_shot': "masterpiece, high quality photo of [input], [environment], [shot_type], centered:1.9 ,(in frame:1.9),bokeh, uhd, dslr, soft lighting, (high quality:1.8), Fujifilm XT3",
+    'person': "masterpiece, detailed photo of (a person using [input]):1.8,[environment], product photography, [shot_type] , centered:1.9 ,(in frame:1.9), bokeh, uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3",
 } 
-const FIXED_NEGATIVES = "blur, haze, nsfw, naked"
+const FIXED_NEGATIVES = "blur, haze, nsfw, naked, low quality"
 
 function parseEnvRequirements(env) {
     const envMapping = {
@@ -34,40 +39,59 @@ function parseEnvRequirements(env) {
 }
 
 function getShotType(shotType) {
-    if(shotType == 'wide') {
+    if(shotType == 'shot-type-wide') {
         return '(wide shot:1.8)' 
     }
-    if(shotType == 'closeup') {
+    if(shotType == 'shot-type-close') {
         return '(closeup shot:1.8)'
     }
 
-    if(shotType == 'extra-wide') {
+    if(shotType == 'shot-type-extrawide') {
         return '(extra wide shot:1.8)'
     }
 
 }
 
+function getPromptTemplateIndex(usedByPerson, shotType) {
+    if(usedByPerson) {
+        return 'person'
+    }
+
+    if(shotType.indexOf("wide") != -1) {
+        return 'normal_wide_shot'
+    }
+    return 'normal'
+}
 
 
 async function getFinalPrompt({prompt, usedByPerson, shotType, env}) {
-    const productNameRegExp = /\{([a-zA-Z 0-9]+)\}/
-    let text = PROMPT_TEMPLATES[usedByPerson ? 'person' : 'normal']
+    const productNameRegExp = /\{([a-zA-Z 0-9]+)\}/g;
+    let index = getPromptTemplateIndex(usedByPerson, shotType)
+    let text = PROMPT_TEMPLATES[index] //usedByPerson ? 'person' : 'normal']
             .replace("[input]", prompt)
             .replace("[environment]", parseEnvRequirements(env))
             .replace("[shot_type]", getShotType(shotType))
         
-    let matches = productNameRegExp.exec(text);
 
+    //let matches = productNameRegExp.exec(text);
     let ret = {
         prompt: text,
-        lora: null
+        lora: []
+    }
+    let count = 1;
+    let matches = null;
+    while( (matches = productNameRegExp.exec(text)) !== null) {
+        
+        console.log("Match------------------------")
+        console.log(matches)
+        console.log("--------------------------")
+        let lora_url = await getLoraURL(matches[1])
+        ret.prompt = ret.prompt.replace(matches[0], `<${count}>`)
+        ret.lora.push(lora_url)
+        count++;
     }
 
-    if(matches != null) {
-        let lora_url = await getLoraURL(matches[1])
-        ret.prompt = ret.prompt.replace(matches[0], "<1>")
-        ret.lora = lora_url
-    }
+
     return ret;
 }
 
@@ -85,14 +109,16 @@ export default withAuth(async function handler(req, res) {
                 guidance_scale: req.body.guidanceNumber,
                 num_outputs: req.body.numberPhotos,
                 negative_prompt: `${FIXED_NEGATIVES}, ${negatives.join(",")}`,
+                scheduler: DEFAULT_SCHEDULER,
+                width: DEFAULT_WIDTH,
                 num_inference_steps: DEFAULT_STEPS,
                // lora_urls:  'https://replicate.delivery/pbxt/xy5oy6tstMaaDRnJVuqKehcNP3B48vKp5xg0sOzEWWXlsuUIA/tmp8trorbpcmacrame-teepeezip.safetensors'
                 //lora_scales: 0.5
             }
         
     if(prompt.lora) {
-        inputObj.lora_urls = prompt.lora
-        inputObj.lora_scales = 0.3;
+        inputObj.lora_urls = prompt.lora.join("|")
+        inputObj.lora_scales = prompt.lora.map( url => DEFAULT_LORA_SCALE).join("|")
     }
 
     if(req.body.imgSource) {
@@ -104,6 +130,8 @@ export default withAuth(async function handler(req, res) {
         inputObj.seed = req.body.seed
     }
 
+    console.log("Doing prediction with this data:")
+    console.log(inputObj)
     try {
         response = await fetch("https://api.replicate.com/v1/predictions", {
         method: "POST",

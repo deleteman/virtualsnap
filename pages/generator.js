@@ -1,18 +1,25 @@
 import ErrorModal from '@/components/ErrorModal';
 import { SDPhoto } from '@/components/SDPhoto';
 import { getUserPhotos } from '@/utils/getUserPhotos';
-import { useContext, useEffect, useRef, useState } from 'react';
-import { Button, Spinner, Form } from 'react-bootstrap';
+import {  useContext, useEffect, useRef, useState, useReducer } from 'react';
+import {  Spinner, Form } from 'react-bootstrap';
 import cookies from 'next-cookies';
 import { useRouter } from 'next/router';
-import { Tooltip } from 'react-tooltip'
-import ErrorBoundary from '@/components/Boundary'
+import dynamic from "next/dynamic";
 
+import ErrorBoundary from '@/components/Boundary'
 
 import jwt from 'jsonwebtoken';
 import { UserContext } from '@/components/UserProvider';
+import { getUserProducts } from '@/utils/userUtils';
+
+import { Tooltip } from 'react-tooltip'
+import NoSSR from '@/components/NoSSR'
+
+
 
 const DEFAULT_NUMBER_PHOTOS = 4;
+const DEFAULT_GUIDANCE= 9;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -44,6 +51,12 @@ export async function getServerSideProps(context) {
   }
   
   const data = await getUserPhotos(usrData.id)
+  const products = (await getUserProducts(usrData.id)).map( p => {
+    return {
+      id: p._id.toString(),
+      value: p.name
+    }
+  })
   // console.log("Get user photos!")
   // console.log(data)
   // console.log("Get user photos!")
@@ -51,6 +64,7 @@ export async function getServerSideProps(context) {
   return {
     props: {
       data: JSON.parse(JSON.stringify(data)),
+      products
     },
   }
 }
@@ -173,25 +187,46 @@ const DEFAULT_SEED = -1
 const DEFAULT_IMG_SOURCE = null
 const DEFAULT_LIKENESS = 0.2
 
-function MyComponent({data}) {
+function MyComponent({data, products}) {
   const router = useRouter();
   
   const { user }  = useContext(UserContext)
   
-  //const [productPrompt, setProductPrompt] = useState('');
+  const [productPromptValue, setProductPromptValue] = useState('');
+
   const [guidanceNumber, setGuidanceNumber] = useState(9);
+  const refGuidanceNumber = useRef()
+
   const [negatives, setNegatives] = useState('');
+  const refAvoid = useRef();
+
   const [usedByPerson, setUsedByPerson] = useState(false);
-  const [numberPhotos, setNumberPhotos] = useState(DEFAULT_NUMBER_PHOTOS);
+  const refUsedByPerson = useRef()
+
+  //const [numberPhotos, setNumberPhotos] = useState(DEFAULT_NUMBER_PHOTOS);
+  let numberPhotos;
+  const refNumberPhotos = useRef()
+
+
   const [gallery, setGallery] = useState([])
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false);
+
   const [environment, setEnvironment] = useState(DEFAULT_ENV);
+  const refEnvironment = useRef()
+
   const [shotType, setShotType] = useState(DEFAULT_SHOT_TYPE);
+  const refShotTypeClose = useRef()
+  const refShotTypeWide = useRef()
+  const refShotTypeExtraWide = useRef()
   const [seed, setSeed] = useState(DEFAULT_SEED);
   const [imgSource, setImgSource] = useState(DEFAULT_IMG_SOURCE);
   const [likeness, setLikeness] = useState(DEFAULT_LIKENESS);
   const refPrompt = useRef()
+
+  const QuillNoSSRWrapper = dynamic( () => import('@/components/PromptEditor'), {ssr: false,
+    loading: () => <p>Loading prompt editor...</p>
+  })
   
   useEffect(() => {
     if(!data) {
@@ -204,12 +239,22 @@ function MyComponent({data}) {
       console.log("Gallery")
       console.log(gallery)
     }
+
+    refNumberPhotos.current.value = DEFAULT_NUMBER_PHOTOS
   }, [])
+
+  function getShotType() {
+    if(refShotTypeClose.current.checked) return refShotTypeClose.current.value;
+    if(refShotTypeWide.current.checked) return refShotTypeWide.current.value;
+    if(refShotTypeExtraWide.current.checked) return refShotTypeExtraWide.current.value;
+  }
 
   function resetParameters(e) {
     if(e) e.preventDefault()
-    setEnvironment(DEFAULT_ENV)
-    setShotType(DEFAULT_SHOT_TYPE)
+    refAvoid.current.value = ''
+    refEnvironment.current.value = DEFAULT_ENV
+    refUsedByPerson.current.checked = false;
+    refShotType.current.value = DEFAULT_SHOT_TYPE
     setSeed(DEFAULT_SEED)
     setImgSource(DEFAULT_IMG_SOURCE)
     setLikeness(DEFAULT_LIKENESS)
@@ -220,25 +265,29 @@ function MyComponent({data}) {
     console.log(photo)
     setSeed(photo.seed)
     setImgSource(photo.url)
-    setProductPrompt(photo.metadata?.original_prompt)
-    setGuidanceNumber(photo.guidance_scale)
-    setNegatives(photo.negative_prompt)
-    //setTimeout(() => handleSubmit(),0)
+    setProductPromptValue(photo.metadata?.original_prompt)
+    refAvoid.current.value = photo.negative_prompt
   }
   
   const handleSubmit = async (e) => {
+    //get the product prompt from quill in an efficient way without using internal state
+    const productPrompt = document.querySelector(".ql-editor").innerText
     if(e) e.preventDefault();
     setLoading(true)
+
+    setProductPromptValue(productPrompt)
+    numberPhotos = refNumberPhotos.current.value; //update this internal variable with the value entered by the user
+
     const response = await makeRequest({
-      ///productPrompt,
-      productPrompt: refPrompt.current.value,
-      guidanceNumber,
-      negatives,
-      numberPhotos,
+      productPrompt,
+      guidanceNumber:DEFAULT_GUIDANCE,
+      negatives: refAvoid.current.value,
+      numberPhotos: refNumberPhotos.current.value,
       seed,
-      usedByPerson,
-      shotType,
-      environment,
+      usedByPerson: refUsedByPerson.current.checked,
+      shotType: getShotType(),
+      //shotType,
+      environment: refEnvironment.current.value,
       imgSource,
       likeness
     });
@@ -250,6 +299,8 @@ function MyComponent({data}) {
       setLoading(false)
       return;
     }
+
+    numberPhotos = refNumberPhotos.current.value;
     
     console.log("Adding ", numberPhotos, " new empty photos")
     console.log("Size of the gallery: ", gallery.length)
@@ -315,21 +366,31 @@ function MyComponent({data}) {
       <div className="col-md-4">
       <Form onSubmit={handleSubmit}>
       <div className="form-group">
-      <label htmlFor="product-prompt">Describe your product:</label>
+      <label htmlFor="product-prompt">
+          Describe your product:
+          <a data-tooltip-id="my-tooltip" data-tooltip-content='Use "{" to open the dropdown with your custom products and select one from the list.'>
+            <span className='app-tooltip'>?</span>
+          </a>
+      </label>
+      <NoSSR>
+        <Tooltip id="my-tooltip" />
+      </NoSSR >
 
-      <textarea
+
+      <QuillNoSSRWrapper  products={products}  value={productPromptValue}/>
+      {/* <textarea
       className="form-control"
       placeholder="Describe your product with as much detail as you can..."
       id="product-prompt"
-      ref={refPrompt}
       />
+    */}
       
       </div>
       <Form.Check
       type='switch'
       label="Used by a person?"
       id="used-by-person"
-      onChange={(e) => setUsedByPerson(e.target.checked)}
+      ref={refUsedByPerson}
       />
       
       <Form.Check
@@ -339,7 +400,7 @@ function MyComponent({data}) {
       name="shot-type"
       id="shot-type-close"
       value="shot-type-close"
-      onChange={() => setShotType("closeup")}
+      ref={refShotTypeClose}
       />
       
       <Form.Check
@@ -349,7 +410,7 @@ function MyComponent({data}) {
       name="shot-type"
       id="shot-type-wide"
       value="shot-type-wide"
-      onChange={() => setShotType("wide")}
+      ref={refShotTypeWide}
       />
     <Form.Check
       type="radio"
@@ -358,16 +419,9 @@ function MyComponent({data}) {
       name="shot-type"
       id="shot-type-extrawide"
       value="shot-type-extrawide"
-      onChange={() => setShotType("extra-wide")}
+      ref={refShotTypeExtraWide}
       />
       
-      <Form.Text
-      type="number"
-      label="Guidance number:"
-      id="guidance-number"
-      value={guidanceNumber}
-      onChange={(e) => setGuidanceNumber(e.target.value)}
-      />
       <div className="form-group">
       <label htmlFor="background-color">Elements to avoid:</label>
       <input
@@ -375,8 +429,7 @@ function MyComponent({data}) {
       className="form-control"
       placeholder="Write what you don't want to see on the picture..."
       id="negatives"
-      value={negatives}
-      onChange={(e) => setNegatives(e.target.value)}
+      ref={refAvoid}
       />
       </div>
       <div className="form-group">
@@ -386,8 +439,7 @@ function MyComponent({data}) {
       max={4}
       className="form-control"
       id="number_photos"
-      value={numberPhotos}
-      onChange={(e) => setNumberPhotos(e.target.value)}
+      ref={refNumberPhotos}
       />
       </div>
 
@@ -409,14 +461,16 @@ function MyComponent({data}) {
         step="0.01" 
         value={likeness} 
         disabled={imgSource == null}
-        onChange={(e) => setLikeness(e.target.value)}/>
+        onChange={(e) => setLikeness(e.target.value)}
+        />
       </Form.Group>
   </ErrorBoundary>
       <Form.Group>
       <Form.Label>Environment</Form.Label>
       <Form.Select 
       className='form-control'
-      onChange={(e) => setEnvironment(e.target.value)}
+        ref={refEnvironment}
+      
       >
       <option value="random">Random</option>
       <option value="livingroom">A livingroom</option>
@@ -430,13 +484,6 @@ function MyComponent({data}) {
       </Form.Select>
 
       </Form.Group>
-      <div className="form-group">
-      <label htmlFor="number_photos">Add your own product:</label>
-      <div className='your-product-box'>
-      Coming soon!
-      </div>
-      </div>
-
       <div className="form-group">
       <label htmlFor="number_photos">Sample product:</label>
       <div className='sample-product-box'>

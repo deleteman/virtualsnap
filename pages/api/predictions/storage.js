@@ -1,6 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { withAuth } from "../middleware/auth";
-import { uploadFile } from "@/utils/uploadFileToFirestore";
+//import { uploadFile } from "@/utils/uploadFileToFirestore";
+import { uploadFile } from "@/utils/s3Upload";
 import {savePhoto} from '../../../utils/savePhotos'
 
 
@@ -23,7 +24,8 @@ async function uploadImageFromUrl(imageUrl, cb, retries) {
         
         // Generate a random filename for the image
         const filename = Math.random().toString(36).substring(7) + '.jpg'
-        uploadFile(blob, filename, cb)
+        let uploadData = await uploadFile({content: blob, originalFilename: filename})
+        return cb(null, uploadData.url)
         
         
         

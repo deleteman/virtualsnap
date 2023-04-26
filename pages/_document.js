@@ -7,13 +7,17 @@ export default function Document({data}) {
     <title>VirtualSnap - Your virtual product photography studio</title>
     <Head >
     
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" 
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css"
     crossOrigin="anonymous"
     />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" 
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet" />
+    <link href="https://cdn.quilljs.com/1.3.7/quill.core.css" rel="stylesheet" />
+
     
     <script
     src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
