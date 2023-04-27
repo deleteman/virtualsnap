@@ -56,6 +56,7 @@ function getPromptTemplateIndex(usedByPerson, shotType) {
     if(usedByPerson) {
         return 'person'
     }
+    if(!shotType) return 'normal';
 
     if(shotType.indexOf("wide") != -1) {
         return 'normal_wide_shot'
