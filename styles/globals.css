@@ -70,6 +70,10 @@ span.app-tooltip {
   left: -115px !important;
 }
 
+.dropdown-menu a {
+  color: #3b2f2f !important;
+}
+
 .form-control.form-check {
   border:0;
 }
