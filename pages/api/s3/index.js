@@ -41,5 +41,7 @@ export default async function handler(req, res) {
     ],*/
   });
 
+  console.log("URL returned : ")
+  console.log(post)
   res.status(200).json(post);
 }
