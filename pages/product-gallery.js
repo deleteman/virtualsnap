@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 import ProductPreview from '@/components/ProductPreview';
 import { Alert, Modal } from 'react-bootstrap';
 import ProductList from '@/components/ProductList';
 import {getUserProducts} from '@/utils/userUtils';
 import { Spinner } from 'react-bootstrap';
 import jwt from 'jsonwebtoken';
+import JSZip from "jszip";
 
 export async function getServerSideProps(context) {
 
@@ -18,6 +20,7 @@ export async function getServerSideProps(context) {
     console.log("No user information found on token...")
     return {
       props: {
+        usr_logged: false,
         productList: []
       }
     }
@@ -31,13 +34,14 @@ export async function getServerSideProps(context) {
       id: p._id.toString(),
       replicate_id: p.replicate_id || null   ,
       status: p.status || null,
-      photos: photos.map( photo => photo.url)
+      photos: (photos) ? photos.map( photo => photo.url) : []
     }
   })
 
   //console.log(JSON.stringify(products))
   return {
     props: {
+      usr_logged: true,
       productList: serialProducts
     }
   }
@@ -63,7 +67,93 @@ function watchPendingTraining(pid, tid, updateCb) {
 }
 
 
-const CreateProductForm = ({productList}) => {
+
+  const handleImageUpload = async (files, name) => {
+
+    console.log("handling image upload...")
+    console.log("product name: ", name)
+    console.log(files)
+
+    const zip = new JSZip();
+    files.forEach((file) => {
+      zip.file(file.name, file);
+    });
+    const zipBlob = await zip.generateAsync({ type: "blob" });
+    const zipFile = new File([zipBlob], "training-images-" + (new Date()).getTime() + ".zip",  {
+      type: 'application/zip'
+    });
+    let uploadedImages = []
+
+    files.push(zipFile) //add the zipfile to the list of files that need to be uploaded
+    console.log("files with the zip included")
+    console.log(files)
+
+    for(let i = 0; i < files.length; i++) {
+        const res = await fetch(
+            `/api/s3/?file=${files[i].name}`
+            );
+        const { url, fields } = await res.json();
+        console.log("pre-signed url: ", url)
+        console.log(fields)
+
+        const formData = new FormData();
+
+        Object.entries({ ...fields, file: files[i] }).forEach(([key, value]) => {
+            formData.append(key, value);
+        });
+
+        const upload = await fetch(url, {
+            method: 'POST',
+            body: formData,
+        });
+        if (upload.ok) {
+            if(files[i].name.indexOf(".zip") != -1) { //it's the zip file
+                let zipTrain = await fetch('/api/products/train', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer: ' + localStorage.getItem('jwtToken'),
+                        'Content-type': 'application/json'
+                      },
+                    body: JSON.stringify({
+                       url: url + files[i].name,
+                       uploadedFiles: uploadedImages,
+                       name
+                    })
+                })
+                let zipJSONResp = await zipTrain.json()
+                console.log("Zip train result: ")
+                console.log(zipTrain)
+                if(!zipTrain.error) {
+                  return {
+                    replicate_id: zipJSONResp.replicate_id,
+                    product: zipJSONResp.product
+                  }
+                }
+                return zipJSONResp
+            } else { //we're uploading a single image
+              uploadedImages.push({
+                url: url + fields.key,
+              })
+            }
+            console.log('Image Uploaded successfully!');
+        } else {
+            console.error('Upload failed.');
+            console.error(upload)
+            return {
+              error: true,
+              error_msg: "There was a problem uploading the file to S3, see console for more details"
+            }
+        }
+
+    }
+  }
+
+
+
+const CreateProductForm = ({productList ,usr_logged}) => {
+
+  const router = useRouter();
+
   const [name, setName] = useState('');
   const [photos, setPhotos] = useState([]);
   const [validationError, setValidationError] = useState(null);
@@ -93,6 +183,13 @@ const CreateProductForm = ({productList}) => {
     console.log(productList)
     setProducts(productList)
  }, [])
+
+  useEffect(() => {
+    if(!usr_logged) {
+      console.log("there is no data")
+      router.push("/login")
+    }
+  }, [])
 
   const handleNameChange = (event) => {
     setName(event.target.value);
@@ -125,23 +222,15 @@ const CreateProductForm = ({productList}) => {
     photos.forEach((photo) => formData.append('photos', photo));
 
     try {
-      const response = await fetch('/api/products/train', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Authorization': 'Bearer: ' + localStorage.getItem('jwtToken')
-        },
- 
-      });
-      const respJSON = await response.json()
-      if(response.status >= 200 && response.status < 300) {
-        setProducts([...products, respJSON.product])
+      let imgUploadResult = await handleImageUpload(photos, name)
+      if(!imgUploadResult.error) {
+        setProducts([...products, imgUploadResult.product])
       } else {
-        setValidationError(error.message)
+        setValidationError(imgUploadResult.error_msg)
       }
       setCreating(false)
       console.log("Response received")
-      console.log(respJSON);
+      console.log(imgUploadResult);
     } catch (error) {
       setCreating(false)
       setValidationError(error.message)

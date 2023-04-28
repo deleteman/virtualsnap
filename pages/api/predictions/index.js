@@ -8,15 +8,16 @@ import { getLoraURL } from "@/utils/productUtils";
 const modelVersion = "db1c4227cbc7f985e335b2f0388cd6d3aa06d95087d6a71c5b3e07413738fa13"
 const DEFAULT_STEPS = 50
 const DEFAULT_WIDTH=768
+const DEFAULT_HEIGHT =640
 const DEFAULT_LORA_SCALE = 0.6
 const DEFAULT_SCHEDULER="DDIM"
 
 
 let PROMPT_TEMPLATES = {
     //'normal': "analog style product photography of <1>, [environment], [shot_type], centered:1.9 ,(in frame:1.9)",
-    'normal': "masterpiece, product photography of [input], [environment], [shot_type], centered:1.9 ,(in frame:1.9),bokeh, uhd, dslr, soft lighting, (high quality:1.8),  Fujifilm XT3",
-    'normal_wide_shot': "masterpiece, high quality photo of [input], [environment], [shot_type], centered:1.9 ,(in frame:1.9),bokeh, uhd, dslr, soft lighting, (high quality:1.8), Fujifilm XT3",
-    'person': "masterpiece, detailed photo of (a person using [input]):1.8,[environment], product photography, [shot_type] , centered:1.9 ,(in frame:1.9), bokeh, uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3",
+    'normal': "masterpiece, product photography of [input], [environment], [shot_type], centered:1.9 ,(in frame:1.9),bokeh, 8k uhd, dslr, soft lighting, (high quality:1.8),  Fujifilm XT3",
+    'normal_wide_shot': "masterpiece, high quality photo of [input], [environment], [shot_type], centered:1.9 ,(in frame:1.9),bokeh, 8k uhd, dslr, soft lighting, (high quality:1.8), Fujifilm XT3",
+    'person': "masterpiece, detailed photo of (a person using [input]):1.8,[environment], product photography, [shot_type] , centered:1.9 ,(in frame:1.9), bokeh, 8k uhd, dslr, soft lighting, high quality, film grain, Fujifilm XT3",
 } 
 const FIXED_NEGATIVES = "blur, haze, nsfw, naked, low quality"
 
@@ -65,7 +66,7 @@ function getPromptTemplateIndex(usedByPerson, shotType) {
 }
 
 
-async function getFinalPrompt({prompt, usedByPerson, shotType, env}) {
+async function getFinalPrompt({prompt, usedByPerson, shotType, env}, user_id) {
     const productNameRegExp = /\{([a-zA-Z 0-9]+)\}/g;
     let index = getPromptTemplateIndex(usedByPerson, shotType)
     let text = PROMPT_TEMPLATES[index] //usedByPerson ? 'person' : 'normal']
@@ -86,7 +87,7 @@ async function getFinalPrompt({prompt, usedByPerson, shotType, env}) {
         console.log("Match------------------------")
         console.log(matches)
         console.log("--------------------------")
-        let lora_url = await getLoraURL(matches[1])
+        let lora_url = await getLoraURL(matches[1], user_id)
         ret.prompt = ret.prompt.replace(matches[0], `<${count}>`)
         ret.lora.push(lora_url)
         count++;
@@ -101,10 +102,14 @@ export default withAuth(async function handler(req, res) {
 
     let negatives = req.body.negatives.split(",")
     if(!req.body.usedByPerson) {
-        negatives.push("people", "woman", "man", "feet", "hand", "legs")
+        negatives.push("people", "woman", "man", "feet", "hand", "legs") 
     }
+    negatives.push("deformed iris", "deformed pupils", "semi-realistic", "cgi", "3d", "render", "sketch", "cartoon", "drawing", "anime:1.4", "text", "cropped", "out of frame", 
+        "worst quality", "low quality", "jpeg artifacts", "ugly", "duplicate", "morbid", "mutilated", "extra fingers", "mutated hands", "poorly drawn hands", 
+        "poorly drawn face", "mutation", "deformed", "blurry", "dehydrated", "bad anatomy", "bad proportions", "extra limbs", "cloned face", "disfigured", 
+        "gross proportions", "malformed limbs", "missing arms", "missing legs", "extra arms", "extra legs", "fused fingers", "too many fingers", "long neck")
     
-    let prompt = await getFinalPrompt({prompt: req.body.prompt, usedByPerson: req.body.usedByPerson, shotType: req.body.shotType, env: req.body.environment});
+    let prompt = await getFinalPrompt({prompt: req.body.prompt, usedByPerson: req.body.usedByPerson, shotType: req.body.shotType, env: req.body.environment}, req.user.id);
     let inputObj = { 
                 prompt: prompt.prompt,
                 guidance_scale: req.body.guidanceNumber,
@@ -112,6 +117,7 @@ export default withAuth(async function handler(req, res) {
                 negative_prompt: `${FIXED_NEGATIVES}, ${negatives.join(",")}`,
                 scheduler: DEFAULT_SCHEDULER,
                 width: DEFAULT_WIDTH,
+                height: DEFAULT_HEIGHT,
                 num_inference_steps: DEFAULT_STEPS,
                // lora_urls:  'https://replicate.delivery/pbxt/xy5oy6tstMaaDRnJVuqKehcNP3B48vKp5xg0sOzEWWXlsuUIA/tmp8trorbpcmacrame-teepeezip.safetensors'
                 //lora_scales: 0.5

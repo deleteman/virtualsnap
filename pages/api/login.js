@@ -34,7 +34,7 @@ export default async function handler(req, res) {
 
     // Generate a JSON Web Token (JWT) for the user
     const token = jwt.sign({ email: user.email, id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.setHeader('Set-Cookie', `jwtToken=${token}; HttpOnly; Max-Age=3600; SameSite=Strict; Path=/`)
+    res.setHeader('Set-Cookie', `jwtToken=${token}; HttpOnly; Max-Age=36000; SameSite=Strict; Path=/`)
 
 
     res.status(200).json({ token });
