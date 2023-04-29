@@ -217,10 +217,6 @@ const CreateProductForm = ({productList ,usr_logged}) => {
     if(photos.length < 5) {
         return setValidationError("Please upload at least 5 photos of your product")
     }
-    const formData = new FormData();
-    formData.append('name', name);
-    photos.forEach((photo) => formData.append('photos', photo));
-
     try {
       let imgUploadResult = await handleImageUpload(photos, name)
       if(!imgUploadResult.error) {

@@ -1,3 +1,7 @@
+body {
+  background-color: #eeebeb !important;
+}
+
 
 span.app-tooltip {
     border: 2px solid #999;
@@ -86,6 +90,7 @@ label {
   background: #f5efef;
   box-shadow: 0px 7px 14px 3px;
   padding-top: 16px;
+  border-radius: 0px 0px 10px 10px;
 }
 
 main {
@@ -161,6 +166,7 @@ textarea::placeholder {
 
 .content {
   flex: 1 !important;
+  margin-bottom: 20px;
 }
 
 .current-page {
@@ -169,6 +175,17 @@ textarea::placeholder {
 
 .footer {
   margin-top: auto;
+}
+
+.footer ul.social-links {
+    list-style: none;
+    padding: 12px;
+    margin-left: 20px;
+}
+.footer .social-links li a {
+    color: white;
+    margin-left: 3px;
+    vertical-align: middle;
 }
 
 .your-product-box,
