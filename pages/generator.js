@@ -254,7 +254,7 @@ function MyComponent({data, products}) {
     refAvoid.current.value = ''
     refEnvironment.current.value = DEFAULT_ENV
     refUsedByPerson.current.checked = false;
-    refShotType.current.value = DEFAULT_SHOT_TYPE
+    //refShotType.current.value = DEFAULT_SHOT_TYPE
     setSeed(DEFAULT_SEED)
     setImgSource(DEFAULT_IMG_SOURCE)
     setLikeness(DEFAULT_LIKENESS)
@@ -363,7 +363,7 @@ function MyComponent({data, products}) {
       <div className="container">
       <ErrorModal show={error != null} onClose={handleCloseErrorModal} errorMessage={error}/>
       <div className="row">
-      <div className="col-md-4">
+      <div className="col-md-8 col-lg-4">
       <Form onSubmit={handleSubmit}>
       <div className="form-group">
       <label htmlFor="product-prompt">
@@ -514,7 +514,7 @@ function MyComponent({data, products}) {
     </Form>
     </div>
     { /* right column */ }
-    <div className="col-md-8">
+    <div className="col-md-12 col-lg-8">
     <div className="row" id="image-gallery">
       <ErrorBoundary>
     {gallery.length > 0 && gallery.map( (photo,idx) => {
