@@ -19,8 +19,29 @@ function NavigationBar() {
           </div>
         </Navbar.Brand>
       </Link>
+      {!user && <Navbar.Collapse id="navbar-nav" className='justify-content-end'>
+        <Nav  pullLeft>
+          <NavLink href="/plans" active={router.pathname.indexOf('plans') != -1 }   >
+              Pricing
+          </NavLink>
+          <NavLink href="https://medium.com/the-online-sales-scoop" target='_blank'   >
+              Blog
+          </NavLink>
+           <NavLink href="/login" active={router.pathname.indexOf('login') != -1 }   >
+              Log-in
+          </NavLink>
+ 
+        </Nav>
+
+
+      </Navbar.Collapse>}
       {user && <Navbar.Collapse id="navbar-nav" className='justify-content-end'>
-        <Nav pullLeft>
+        <Nav  pullLeft>
+          <NavLink href="/plans" active={router.pathname.indexOf('plans') != -1 }   >
+              Get more tokens!
+          </NavLink>
+
+
           <NavLink href="/generator" active={router.pathname.indexOf('generator') != -1 }   >
               Photo studio
           </NavLink>
@@ -50,6 +71,9 @@ function NavigationBar() {
             </Link>
             <Link href="">
               <NavDropdown.Item>Settings (pending)</NavDropdown.Item>
+            </Link>
+            <Link href="https://billing.stripe.com/p/login/test_eVa16bfdVe5NcO4aEE">
+              <NavDropdown.Item href="https://billing.stripe.com/p/login/test_eVa16bfdVe5NcO4aEE">Billing</NavDropdown.Item>
             </Link>
             <NavDropdown.Divider />
             <Link href="/logout">

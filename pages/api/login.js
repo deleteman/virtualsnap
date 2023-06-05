@@ -33,8 +33,8 @@ export default async function handler(req, res) {
     }
 
     // Generate a JSON Web Token (JWT) for the user
-    const token = jwt.sign({ email: user.email, id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.setHeader('Set-Cookie', `jwtToken=${token}; HttpOnly; Max-Age=36000; SameSite=Strict; Path=/`)
+    const token = jwt.sign({ email: user.email, id: user._id, credits: user.credits, plan: user.plan }, process.env.JWT_SECRET, { expiresIn: '24h' });
+    res.setHeader('Set-Cookie', `jwtToken=${token}; HttpOnly; Max-Age=36000; SameSite=Lax; Path=/`)
 
 
     res.status(200).json({ token });

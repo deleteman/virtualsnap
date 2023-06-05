@@ -2,7 +2,7 @@ import ErrorModal from '@/components/ErrorModal';
 import { SDPhoto } from '@/components/SDPhoto';
 import { getUserPhotos } from '@/utils/getUserPhotos';
 import {  useContext, useEffect, useRef, useState, useReducer } from 'react';
-import {  Spinner, Form } from 'react-bootstrap';
+import {  Alert, Spinner, Form } from 'react-bootstrap';
 import cookies from 'next-cookies';
 import { useRouter } from 'next/router';
 import dynamic from "next/dynamic";
@@ -15,6 +15,8 @@ import { getUserProducts } from '@/utils/userUtils';
 
 import { Tooltip } from 'react-tooltip'
 import NoSSR from '@/components/NoSSR'
+import PhotoCountSelector from '@/components/PhotoCountSelector';
+import LikenessSlider, { DEFAULT_LIKENESS } from '@/components/LikenessSlider';
 
 
 
@@ -100,11 +102,14 @@ async function savePermanentPhoto(p, input) {
 
   return {
     url: jsonRes.url,
-    id: jsonRes.saved_to_db
+    id: jsonRes.saved_to_db,
+    cost: jsonRes.cost,
+    newToken: jsonRes.newToken
   }
 }
 
 async function predictionDone(prediction, setError ) {
+  let totalCost = 0;
   if(prediction.status == 'succeeded') {
     let newPhotos = prediction.output.map(o => ({
       path: o,
@@ -115,6 +120,7 @@ async function predictionDone(prediction, setError ) {
       negative_prompt: prediction.input.negative_prompt
     }))
     try {
+      
       for (let photo of newPhotos) {
         let d = await savePermanentPhoto(photo, prediction.input)
         if(d.error){
@@ -124,18 +130,20 @@ async function predictionDone(prediction, setError ) {
           photo.path = d.url;
           photo.url = d.url;
           photo._id = d.id
+          localStorage.setItem('jwtToken', d.newToken)
+          totalCost += d.cost; //reduce the number of credits from this generation
         }       
       }
     } catch (e) {
       console.log("Error saving photos")
       console.log(e)
-      return false;
+      return {error: true};
     }
-    return newPhotos
+    return {newPhotos, totalCost, error: false}
   }
   if(prediction.status == 'failed') {
     setError(prediction.error)
-    return false
+    return {error: true}
   }
 }
 
@@ -149,7 +157,7 @@ function parseSeedFromLog(logMessage) {
 }
 
 async function makeRequest({productPrompt,
-  guidanceNumber,
+  guidanceNumber, 
   negatives,
   numberPhotos,
   seed,
@@ -185,14 +193,17 @@ const DEFAULT_ENV = "random"
 const DEFAULT_SHOT_TYPE = "closeup"
 const DEFAULT_SEED = -1
 const DEFAULT_IMG_SOURCE = null
-const DEFAULT_LIKENESS = 0.2
 
 function MyComponent({data, products}) {
   const router = useRouter();
   
   const { user }  = useContext(UserContext)
+
+  const [userCredits, setUserCredits] = useState()
   
   const [productPromptValue, setProductPromptValue] = useState('');
+
+  const [numberOfPhotosSelected, setNumberOfPhotosSelected] = useState(DEFAULT_NUMBER_PHOTOS);
 
   const [guidanceNumber, setGuidanceNumber] = useState(9);
   const refGuidanceNumber = useRef()
@@ -221,8 +232,9 @@ function MyComponent({data, products}) {
   const refShotTypeExtraWide = useRef()
   const [seed, setSeed] = useState(DEFAULT_SEED);
   const [imgSource, setImgSource] = useState(DEFAULT_IMG_SOURCE);
-  const [likeness, setLikeness] = useState(DEFAULT_LIKENESS);
   const refPrompt = useRef()
+
+  const refLikeness = useRef()
 
   const QuillNoSSRWrapper = dynamic( () => import('@/components/PromptEditor'), {ssr: false,
     loading: () => <p>Loading prompt editor...</p>
@@ -236,12 +248,17 @@ function MyComponent({data, products}) {
       console.log("setting gallery from db")
       console.log(data)
       setGallery(buildGallery(data))
-      console.log("Gallery")
+     console.log("Gallery")
       console.log(gallery)
     }
-
     refNumberPhotos.current.value = DEFAULT_NUMBER_PHOTOS
   }, [])
+
+    useEffect(() => {
+    if(user) {
+      setUserCredits(user.credits)
+    }
+  }, [user])
 
   function getShotType() {
     if(refShotTypeClose.current.checked) return refShotTypeClose.current.value;
@@ -257,7 +274,8 @@ function MyComponent({data, products}) {
     //refShotType.current.value = DEFAULT_SHOT_TYPE
     setSeed(DEFAULT_SEED)
     setImgSource(DEFAULT_IMG_SOURCE)
-    setLikeness(DEFAULT_LIKENESS)
+    refLikeness.current.value = DEFAULT_LIKENESS
+    //setLikeness(DEFAULT_LIKENESS)
   }
 
   function generateFromImage(photo) {
@@ -289,7 +307,7 @@ function MyComponent({data, products}) {
       //shotType,
       environment: refEnvironment.current.value,
       imgSource,
-      likeness
+      likeness: refLikeness.current.value
     });
     let prediction = await response.json();
     let metadata = prediction.metadata; //saving the metadata of this generation
@@ -337,12 +355,13 @@ function MyComponent({data, products}) {
       }
       
       prediction.metadata = metadata //re-adding the metadata to the last reponse
-      let res = await predictionDone(prediction, setError)
-      if(res != false) {
+      let {error, newPhotos, totalCost} = await predictionDone(prediction, setError)
+      if(error == false) {
+        setUserCredits(userCredits - totalCost);
         let temp = [] 
         placeholders.forEach( gphoto => {
           if(gphoto.status == "pending") {
-            let p = res.shift()
+            let p = newPhotos.shift()
             temp.push(p.error ? gphoto : p)
           } else {
             temp.push(gphoto)
@@ -360,11 +379,17 @@ function MyComponent({data, products}) {
     }
     
     return (
-      <div className="container">
+      <div className="container generator">
       <ErrorModal show={error != null} onClose={handleCloseErrorModal} errorMessage={error}/>
       <div className="row">
       <div className="col-md-8 col-lg-4">
       <Form onSubmit={handleSubmit}>
+
+      <div class="credits-indicator">
+        You have <span class="credits">{(user) ? userCredits : 0}</span> tokens left 
+      </div>
+
+
       <div className="form-group">
       <label htmlFor="product-prompt">
           Describe your product:
@@ -388,7 +413,7 @@ function MyComponent({data, products}) {
       </div>
       <Form.Check
       type='switch'
-      label="Used by a person?"
+      label="Are there people in the picture?"
       id="used-by-person"
       ref={refUsedByPerson}
       />
@@ -434,35 +459,13 @@ function MyComponent({data, products}) {
       </div>
       <div className="form-group">
       <label htmlFor="number_photos">Number of photos:</label>
-      <input
-      type="number"
-      max={4}
-      className="form-control"
-      id="number_photos"
-      ref={refNumberPhotos}
-      />
-      </div>
+      <PhotoCountSelector outterRef={refNumberPhotos}/>
+    </div>
 
       <ErrorBoundary>
       <Form.Group>
-        <Form.Label>Likeness to selected image (more/less)</Form.Label>
-      {/* <a className="fas fa-question-circle" data-tooltip-id="likeness-tooltip" data-tooltip-html="Select how similar is your <br />new image to the selected one"   data-bs-placement="top" >
-        <svg width="16px" height="16px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" strokeWidth="0"></g><g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zM7.92 9.234v.102a.5.5 0 0 0 .5.5h.997a.499.499 0 0 0 .499-.499c0-1.29.998-1.979 2.34-1.979 1.308 0 2.168.689 2.168 1.67 0 .928-.482 1.359-1.686 1.91l-.344.154C11.379 11.54 11 12.21 11 13.381v.119a.5.5 0 0 0 .5.5h.997a.499.499 0 0 0 .499-.499c0-.516.138-.723.55-.912l.345-.155c1.445-.654 2.529-1.514 2.529-3.39v-.103c0-1.978-1.72-3.441-4.164-3.441-2.478 0-4.336 1.428-4.336 3.734zm2.58 7.757c0 .867.659 1.509 1.491 1.509.85 0 1.509-.642 1.509-1.509 0-.867-.659-1.491-1.509-1.491-.832 0-1.491.624-1.491 1.491z" fill="#808080"></path></g></svg>
-        </a>
+        <LikenessSlider disabled={imgSource == null} outterRef={refLikeness}/>
 
-        <Tooltip id="likeness-tooltip" />
-        */}
-
-        <input type="range" 
-        id="likeness" 
-        name="likeness" 
-        min="0" 
-        max="1" 
-        step="0.01" 
-        value={likeness} 
-        disabled={imgSource == null}
-        onChange={(e) => setLikeness(e.target.value)}
-        />
       </Form.Group>
   </ErrorBoundary>
       <Form.Group>
@@ -493,7 +496,6 @@ function MyComponent({data, products}) {
         </div>}
       </div>
       </div>
-
 
 
    <button className="btn btn-secondary float-left" disabled={loading} onClick={resetParameters}>
@@ -527,10 +529,14 @@ function MyComponent({data, products}) {
                 key={photo._id} 
                 moreLikeThis={() => generateFromImage(photo)}
                 resetMoreLikeThis={() => resetParameters()}
+                reduceUserCredits={(creds) => setUserCredits(userCredits - creds)}
           />
         </div>
         )
-      })}</ErrorBoundary>
+      })
+      }
+      {gallery.length == 0 && <Alert className="info no-snaps-notification">You haven&#39;t snapped any pictures yet!</Alert> }
+      </ErrorBoundary>
       </div>
       </div>
       </div>

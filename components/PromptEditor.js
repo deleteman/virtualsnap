@@ -3,12 +3,12 @@ import QuillMention from 'quill-mention'
 import "react-quill/dist/quill.core.css";
 import "react-quill/dist/quill.core.css";
 import "react-quill/dist/quill.snow.css";
-import { useState } from 'react';
+import { useState, memo } from 'react';
 
 
 
   
-export default function PromptEditor({products, value}) {
+export default memo(function PromptEditor({products, value}) {
     Quill.register('modules/mention', QuillMention)
 
     console.log("rendering prompt editor...")
@@ -43,4 +43,10 @@ export default function PromptEditor({products, value}) {
             placeholder="Write a description of your product, something like 'a golden ring with an owl face, and rubies in the eyes'." 
         />
     )
-}
+}, (prev, next) => {
+  console.log("------------------------------------")
+  console.log(prev)
+  console.log(next)
+  console.log("------------------------------------")
+  return prev == next
+})

@@ -3,10 +3,14 @@ import { useRouter } from 'next/router';
 import ProductPreview from '@/components/ProductPreview';
 import { Alert, Modal } from 'react-bootstrap';
 import ProductList from '@/components/ProductList';
-import {getUserProducts} from '@/utils/userUtils';
+import {getUserProducts } from '@/utils/userUtils';
+import { userHasPermissions } from '@/utils/feUserUtils';
 import { Spinner } from 'react-bootstrap';
 import jwt from 'jsonwebtoken';
 import JSZip from "jszip";
+import { COSTS_PER_PRODUCT, PERM_PRODUCT_GALLERY, PERM_TOO_MANY_PRODUCTS } from '@/utils/consts';
+import NoSSR from '@/components/NoSSR';
+import { Tooltip } from 'react-tooltip'
 
 export async function getServerSideProps(context) {
 
@@ -41,6 +45,7 @@ export async function getServerSideProps(context) {
   //console.log(JSON.stringify(products))
   return {
     props: {
+      user: usrData,
       usr_logged: true,
       productList: serialProducts
     }
@@ -149,8 +154,36 @@ function watchPendingTraining(pid, tid, updateCb) {
   }
 
 
+function CreateButton({user, products}) {
+  console.log()
+  let canUse = userHasPermissions({user}, PERM_PRODUCT_GALLERY)
+  let underProductLimit = userHasPermissions( {user, products}, PERM_TOO_MANY_PRODUCTS)
+  let errorMsg = '';
+  if(!canUse) {
+    errorMsg = 'You need to have the Designer or Photographer plan to use this feature'
+  }
 
-const CreateProductForm = ({productList ,usr_logged}) => {
+  if(canUse && !underProductLimit) {
+    errorMsg = "You've reached the limit of products for your plan"
+  }
+
+  return (<>Create product
+            {(errorMsg && 
+              <>
+                <a data-tooltip-id="my-tooltip" data-tooltip-content={errorMsg}>
+                  <span className='app-tooltip'>?</span>
+                </a>
+                <NoSSR>
+                  <Tooltip id="my-tooltip" />
+                </NoSSR >
+              </>
+            )}
+            </>
+  )
+}
+
+
+const CreateProductForm = ({productList ,usr_logged, user}) => {
 
   const router = useRouter();
 
@@ -212,9 +245,11 @@ const CreateProductForm = ({productList ,usr_logged}) => {
     setCreating(true)
 
     if(name == "") {
+      setCreating(false)
         return setValidationError("The name of the product is mandatory")
     }
     if(photos.length < 5) {
+      setCreating(false)
         return setValidationError("Please upload at least 5 photos of your product")
     }
     try {
@@ -281,9 +316,15 @@ const CreateProductForm = ({productList ,usr_logged}) => {
                 :  <Alert variant='info'>No pictures uploaded yet</Alert>
         }
       </div>
-      <button type="submit" className="btn btn-primary">
-            {creating ? <Spinner animation="border" size="sm" /> : "Create product"}
+      <button type="submit" className="btn btn-primary" disabled={!(userHasPermissions({user}, PERM_PRODUCT_GALLERY) && userHasPermissions({user, products}, PERM_TOO_MANY_PRODUCTS))}>
+            {creating ? 
+              <Spinner animation="border" size="sm" /> : 
+              (<CreateButton user={user} products={products}/>)
+              }
       </button>
+
+
+      <div className='generation-cost align-left'>This action will cost you <span className='costs'>{COSTS_PER_PRODUCT}</span> tokens</div>
     </form>
             </div>
         </div>

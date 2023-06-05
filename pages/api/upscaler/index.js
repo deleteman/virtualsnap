@@ -1,9 +1,12 @@
 import { withAuth } from "../middleware/auth";
-import FormData from 'form-data'
+import { enoughCredits } from "../middleware/validateCredits";
+import { COSTS_UPSCALER } from "@/utils/consts";
+import { substractUserCredits } from "@/utils/userUtils";
 
-const modelVersion = "32fdb2231d00a10d33754cc2ba794a2dfec94216579770785849ce6f149dbc69"
+const modelVersion = "42fed1c4974146d4d2414e2be2c5277c7fcf05fcc3a73abf41610695738c1d7b"
 
-export default withAuth(async function handler(req, res) {
+
+export default withAuth(enoughCredits(async function handler(req, res) {
     let response = "";
 
     try {
@@ -30,7 +33,8 @@ export default withAuth(async function handler(req, res) {
             // This is the text prompt that will be submitted by a form on the frontend
             input: {
                 image: imgBinary,
-                scale: 8,
+                scale: 4,
+                face_enhance: true
             }
         }),
         });
@@ -51,7 +55,9 @@ export default withAuth(async function handler(req, res) {
   
     const prediction = await response.json();
     console.log(prediction)
+    console.log("Updating user credits for the upscale....")
+    await substractUserCredits(req.user.id, COSTS_UPSCALER)
     res.statusCode = 201;
     res.end(JSON.stringify(prediction));
   }
-)
+, COSTS_UPSCALER))

@@ -1,6 +1,5 @@
 import { getFirestoreApp } from "@/utils/getFirestoreApp";
 import 'firebase/firestore'
-import firebase from 'firebase/app'
 import 'firebase/storage';  // <----
 
 

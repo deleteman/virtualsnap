@@ -3,6 +3,8 @@ import { withAuth } from "../middleware/auth";
 //import { uploadFile } from "@/utils/uploadFileToFirestore";
 import { uploadFile } from "@/utils/s3Upload";
 import {savePhoto} from '../../../utils/savePhotos'
+import { substractUserCredits, updateUserCookieWithDB } from "@/utils/userUtils";
+import { COSTS_SINGLE_GENERATION } from "@/utils/consts";
 
 
 
@@ -65,11 +67,26 @@ export default withAuth(async function handler(req, res) {
             }
             console.log("File uploaded to: ", finalURL)
             const saveRes = await savePhoto(req.user.id, prompt.prompt, prompt.seed, prompt.guidance_scale, prompt.negative_prompt, metadata, finalURL)
+            let newToken = null;
+
+            try {
+                let creditsUpdateResult = await substractUserCredits(req.user.id, COSTS_SINGLE_GENERATION)
+                let [newData, token] = await updateUserCookieWithDB(req.user, res)
+                newToken = token;
+
+                console.log("Result from updating the credtis: ")
+                console.log(creditsUpdateResult)
+            } catch (e) {
+                console.log("Error while updating the user's credits...")
+                console.log(e)
+            }
             
             res.statusCode = 201;
             res.end(JSON.stringify({
                 url: finalURL,
-                saved_to_db: saveRes
+                saved_to_db: saveRes,
+                cost: COSTS_SINGLE_GENERATION,
+                newToken
             }));
             resolve()
         }, 0)
