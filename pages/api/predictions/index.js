@@ -2,7 +2,7 @@ import { getFinalPrompt } from "@/utils/promptUtils";
 import { withAuth } from "../middleware/auth";
 import { getPromptObject } from "@/utils/models/index.js";
 import { enoughCredits } from "../middleware/validateCredits";
-import { COSTS_SINGLE_GENERATION } from "@/utils/consts";
+import { ACTION_SINGLE_GEN, COSTS_SINGLE_GENERATION } from "@/utils/consts";
 
 
 
@@ -65,4 +65,4 @@ export default withAuth(enoughCredits(async function handler(req, res) {
     res.statusCode = 201;
     res.end(JSON.stringify(prediction));
   }
-, COSTS_SINGLE_GENERATION))
+, ACTION_SINGLE_GEN))

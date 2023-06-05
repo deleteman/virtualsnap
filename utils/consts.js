@@ -82,6 +82,9 @@ export const PRICING_PLANS = [
 
 
 
+export const ACTION_SINGLE_GEN = 'single-gen'
+export const ACTION_UPSCALE = 'upscale'
+export const ACTION_PRODUCT_GEN = 'product-train'
 
 export const COSTS_SINGLE_GENERATION = 3;
 export const COSTS_UPSCALER = 3;

@@ -1,10 +1,24 @@
-import { ERROR_CODE_NO_CREDITS, COSTS_PER_PRODUCT, COSTS_SINGLE_GENERATION, COSTS_UPSCALER } from "@/utils/consts";
+import { ERROR_CODE_NO_CREDITS, COSTS_PER_PRODUCT, COSTS_SINGLE_GENERATION, COSTS_UPSCALER, ACTION_PRODUCT_GEN, ACTION_SINGLE_GEN, ACTION_UPSCALE } from "@/utils/consts";
 import { getUserCredits } from "@/utils/userUtils";
 
-export function enoughCredits(handler, credits) {
+function getActionCost(action) {
+  if(action == ACTION_PRODUCT_GEN) {
+    return COSTS_PER_PRODUCT
+  }
+
+  if(action == ACTION_SINGLE_GEN) {
+    return COSTS_SINGLE_GENERATION
+  }
+
+  if(action == ACTION_UPSCALE) {
+    return COSTS_UPSCALER
+  }
+}
+
+export function enoughCredits(handler, action) {
   return async (req, res) => {
     try {
-
+      let credits = getActionCost(action)
       console.log("---------- COSTS ")
  console.log("COSTS_SINGLE_GENERATION", COSTS_SINGLE_GENERATION)
  console.log("COSTS_UPSCALER", COSTS_UPSCALER)

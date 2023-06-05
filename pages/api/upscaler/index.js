@@ -1,6 +1,6 @@
 import { withAuth } from "../middleware/auth";
 import { enoughCredits } from "../middleware/validateCredits";
-import { COSTS_UPSCALER } from "@/utils/consts";
+import { ACTION_UPSCALE, COSTS_UPSCALER } from "@/utils/consts";
 import { substractUserCredits } from "@/utils/userUtils";
 
 const modelVersion = "42fed1c4974146d4d2414e2be2c5277c7fcf05fcc3a73abf41610695738c1d7b"
@@ -60,4 +60,4 @@ export default withAuth(enoughCredits(async function handler(req, res) {
     res.statusCode = 201;
     res.end(JSON.stringify(prediction));
   }
-, COSTS_UPSCALER))
+, ACTION_UPSCALE))
