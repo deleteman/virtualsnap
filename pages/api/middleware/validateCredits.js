@@ -1,4 +1,4 @@
-import { ERROR_CODE_NO_CREDITS } from "@/utils/consts";
+import { ERROR_CODE_NO_CREDITS, COSTS_PER_PRODUCT, COSTS_SINGLE_GENERATION, COSTS_UPSCALER } from "@/utils/consts";
 import { getUserCredits } from "@/utils/userUtils";
 
 export function enoughCredits(handler, credits) {
