@@ -156,7 +156,9 @@ export async function getPromptTopics(prompt) {
         });
         
         
-        console.log(response.data.data)
+        console.log("---------openai output---------")
+        console.log(response.data)
+        console.log("---------/openai output---------")
         let resp = response.data.choices[0].text
         const topics = resp.split("\n")[2].replace("Topics: ", "").split(",").map( t => t.trim().toLowerCase())
         const elements = resp.split("\n")[3].replace("Elements: ", "").split(",").map( t => t.trim().toLowerCase())
