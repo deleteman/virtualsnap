@@ -144,22 +144,28 @@ export async function getPromptTopics(prompt) {
 
     const categories = getLORACategories();
 
-    const response = await openai.createCompletion({
-        model: "text-davinci-003",
-        prompt: "Analyze the following prompt and try to match as many of the following categories as possible using the exact name of each category: " + categories.join(",") + ". If you can't figure it out, tell me that as well and use the following template for your response: \n Topics: [topic list here] \n Elements: [element list here] . \n Sentence: " + prompt + "  ",
-        temperature: 0,
-        max_tokens: 60,
-        top_p: 1.0,
-        frequency_penalty: 0.5,
-        presence_penalty: 0.0,
-    });
-    
-    
-    console.log(response.data)
-    let resp = response.data.choices[0].text
-    const topics = resp.split("\n")[2].replace("Topics: ", "").split(",").map( t => t.trim().toLowerCase())
-    const elements = resp.split("\n")[3].replace("Elements: ", "").split(",").map( t => t.trim().toLowerCase())
-    return [...topics, ...elements];
+    try {
+        const response = await openai.createCompletion({
+            model: "text-davinci-003",
+            prompt: "Analyze the following prompt and try to match as many of the following categories as possible using the exact name of each category: " + categories.join(",") + ". If you can't figure it out, tell me that as well and use the following template for your response: \n Topics: [topic list here] \n Elements: [element list here] . \n Sentence: " + prompt + "  ",
+            temperature: 0,
+            max_tokens: 60,
+            top_p: 1.0,
+            frequency_penalty: 0.5,
+            presence_penalty: 0.0,
+        });
+        
+        
+        console.log(response.data.data)
+        let resp = response.data.choices[0].text
+        const topics = resp.split("\n")[2].replace("Topics: ", "").split(",").map( t => t.trim().toLowerCase())
+        const elements = resp.split("\n")[3].replace("Elements: ", "").split(",").map( t => t.trim().toLowerCase())
+        return [...topics, ...elements];
+    } catch (e) {
+        console.log("Error while querying OpenAI: ")
+        console.log(e)
+        return []
+    }
     /*
     let totalLoras = 0;
     topics.forEach(t => {
