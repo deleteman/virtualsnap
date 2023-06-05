@@ -145,9 +145,13 @@ export async function getPromptTopics(prompt) {
     const categories = getLORACategories();
 
     try {
+        let openAIPrompt = "classify the following sentence using the following categories: " + categories.join(",") + ". If you can't match any, leave the list of matches empty and use the following template for your response: \n Topics: [topic list here] \n Elements: [element list here] . \n Sentence:" + prompt
+
+        console.log("Proompt used:", openAIPrompt)
+
         const response = await openai.createCompletion({
             model: "text-davinci-003",
-            prompt: "Analyze the following prompt and try to match as many of the following categories as possible using the exact name of each category: " + categories.join(",") + ". If you can't figure it out, tell me that as well and use the following template for your response: \n Topics: [topic list here] \n Elements: [element list here] . \n Sentence: " + prompt + "  ",
+            prompt: openAIPrompt,     
             temperature: 0,
             max_tokens: 60,
             top_p: 1.0,

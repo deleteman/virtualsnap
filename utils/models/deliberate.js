@@ -3,7 +3,7 @@ const DEFAULT_STEPS = 50
 const DEFAULT_WIDTH=768
 const DEFAULT_HEIGHT =640
 const DEFAULT_SCHEDULER="DDIM"
-const FIXED_NEGATIVES = "blur, haze, nsfw, naked, low quality"
+const FIXED_NEGATIVES = "blur, haze, nsfw, naked, low quality, 3d, render, drawing"
 
 
 const modelVersion = "8431dfba7ba601d1db4fc1eeca919a7fbbe91854a18ab25234c2c523b56b866b"
