@@ -4,6 +4,15 @@ import { getUserCredits } from "@/utils/userUtils";
 export function enoughCredits(handler, credits) {
   return async (req, res) => {
     try {
+
+      console.log("---------- COSTS ")
+ console.log("COSTS_SINGLE_GENERATION", COSTS_SINGLE_GENERATION)
+ console.log("COSTS_UPSCALER", COSTS_UPSCALER)
+ console.log("COSTS_PER_PRODUCT",COSTS_PER_PRODUCT )
+
+
+
+
       console.log("Validating credits... cost: ", credits)
       //console.log("Validating token...: ", req.headers)
       let creditsLeft = await getUserCredits(req.user.id)
