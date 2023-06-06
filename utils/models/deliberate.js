@@ -9,6 +9,7 @@ const FIXED_NEGATIVES = "blur, haze, nsfw, naked, low quality, 3d, render, drawi
 const modelVersion = "8431dfba7ba601d1db4fc1eeca919a7fbbe91854a18ab25234c2c523b56b866b"
 
 export function getPromptObject(prompt, negatives, guidanceNumber, numberPhotos) {
+    console.log("Generaing with deliberate....")
     let inputObj = { 
                 prompt: prompt.prompt,
                 guidance_scale: guidanceNumber,

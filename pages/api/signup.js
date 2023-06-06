@@ -1,3 +1,4 @@
+import { DEFAULT_FREE_CREDITS } from '@/utils/consts';
 import {getInstance} from '../../utils/mongoClient'
 import bcrypt from 'bcrypt';
 
@@ -76,7 +77,7 @@ export default async function handler(req, res) {
         }
         
         const hashPwd = await bcrypt.hash(password, 10);
-        const user = { email, hashPwd};
+        const user = { email, hashPwd, credits: DEFAULT_FREE_CREDITS};
         try {
             const result = await users.insertOne(user);
             console.log(result)

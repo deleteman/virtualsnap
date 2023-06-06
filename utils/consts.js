@@ -90,6 +90,8 @@ export const COSTS_SINGLE_GENERATION = 3;
 export const COSTS_UPSCALER = 3;
 export const COSTS_PER_PRODUCT = 10;
 
+export const DEFAULT_FREE_CREDITS = 30;
+
 
 export const ERROR_CODE_NO_CREDITS = 1;
 
