@@ -39,6 +39,7 @@ export default function Layout({ children, data }) {
                     <Link href="https://github.com/deleteman/virtualsnap">Github</Link>
                 </li>
             </ul>
+            <a href="https://www.producthunt.com/posts/virtualsnap-virtual-product-photography?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-virtualsnap&#0045;virtual&#0045;product&#0045;photography" target="_blank" className='ph-button'><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=398427&theme=light" alt="VirtualSnap&#0058;&#0032;Virtual&#0032;Product&#0032;Photography - Product&#0032;photography&#0032;made&#0032;trivially&#0032;easy | Product Hunt" style={{width: 250 + "px",height: 54 + "px", width:"250", height:"54"}} /></a>
       </div>
     
     </div>

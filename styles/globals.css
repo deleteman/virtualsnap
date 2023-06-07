@@ -196,6 +196,7 @@ textarea::placeholder {
     list-style: none;
     padding: 12px;
     margin-left: 20px;
+    float:left;
 }
 .footer .social-links li a {
     color: white;
@@ -665,4 +666,9 @@ a.pricing-button:hover {
 /** pricing switch **/
 .react-switch-bg {
   background-color:  #343a40 !important;
+}
+
+.ph-button {
+  float:right;
+  margin: 40px;
 }
