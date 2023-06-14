@@ -288,9 +288,12 @@ function MyComponent({data, products}) {
   }
   
   const handleSubmit = async (e) => {
+    if(e) e.preventDefault();
     //get the product prompt from quill in an efficient way without using internal state
     const productPrompt = document.querySelector(".ql-editor").innerText
-    if(e) e.preventDefault();
+    if(productPrompt.trim() == "" ){
+      return setError("You must describe your product, something like 'a golden ring with an owl face'")
+    }
     setLoading(true)
 
     setProductPromptValue(productPrompt)
@@ -461,13 +464,6 @@ function MyComponent({data, products}) {
       <label htmlFor="number_photos">Number of photos:</label>
       <PhotoCountSelector outterRef={refNumberPhotos}/>
     </div>
-
-      <ErrorBoundary>
-      <Form.Group>
-        <LikenessSlider disabled={imgSource == null} outterRef={refLikeness}/>
-
-      </Form.Group>
-  </ErrorBoundary>
       <Form.Group>
       <Form.Label>Environment</Form.Label>
       <Form.Select 
@@ -487,7 +483,14 @@ function MyComponent({data, products}) {
       </Form.Select>
 
       </Form.Group>
-      <div className="form-group">
+ 
+      <ErrorBoundary>
+      <Form.Group>
+        <LikenessSlider disabled={imgSource == null} outterRef={refLikeness}/>
+
+      </Form.Group>
+  </ErrorBoundary>
+     <div className="form-group">
       <label htmlFor="number_photos">Sample product:</label>
       <div className='sample-product-box'>
         {imgSource && <img src={imgSource} />}
