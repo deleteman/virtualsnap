@@ -669,6 +669,6 @@ a.pricing-button:hover {
 }
 
 .ph-button {
-  float:right;
-  margin: 40px;
+  /*float:right;*/
+  margin: 10px;
 }
