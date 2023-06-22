@@ -333,7 +333,7 @@ function MyComponent({data, products}) {
       })
     }
     placeholders = [...placeholders, ...gallery]
-    console.log(placeholders)
+    //console.log(placeholders)
     setGallery(placeholders)
     console.log("ADDED ", numberPhotos, " new empty photos")
     console.log("Size of the gallery: ", gallery.length)
@@ -350,6 +350,8 @@ function MyComponent({data, products}) {
         });
         prediction = await response.json();
         if (response.status !== 200) {
+          placeholders.splice(numberPhotos) //remove the pending placeholders
+          setGallery(placeholders)
           setError(prediction.detail);
           setLoading(false)
           return;

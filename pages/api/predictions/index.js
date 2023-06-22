@@ -3,11 +3,14 @@ import { withAuth } from "../middleware/auth";
 import { getPromptObject } from "@/utils/models/index.js";
 import { enoughCredits } from "../middleware/validateCredits";
 import { ACTION_SINGLE_GEN, COSTS_SINGLE_GENERATION } from "@/utils/consts";
+import { EVENT_TYPES, logEvent } from "@/utils/metricsWaveUtils";
 
 
 
 export default withAuth(enoughCredits(async function handler(req, res) {
     let response = "";
+
+    const {user} = req;
 
     let negatives = req.body.negatives.split(",")
     if(!req.body.usedByPerson) {
@@ -61,6 +64,13 @@ export default withAuth(enoughCredits(async function handler(req, res) {
         original_prompt: req.body.prompt,
         full_input: inputObj
     }
+
+    await logEvent(EVENT_TYPES.generation, {
+        email: user.email,
+        plan: user.plan,
+        prompt: prediction.metadata.original_prompt,
+        model_used: modelVersion
+    })
 
     res.statusCode = 201;
     res.end(JSON.stringify(prediction));

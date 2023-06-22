@@ -76,9 +76,7 @@ function NavigationBar() {
               <NavDropdown.Item href="https://billing.stripe.com/p/login/test_eVa16bfdVe5NcO4aEE">Billing</NavDropdown.Item>
             </Link>
             <NavDropdown.Divider />
-            <Link href="/logout">
-              <NavDropdown.Item href='/logout'>Log out</NavDropdown.Item>
-            </Link>
+            <NavDropdown.Item href="/logout">Log out</NavDropdown.Item>
           </NavDropdown>
         </Nav>
       </Navbar.Collapse>

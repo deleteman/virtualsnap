@@ -29,7 +29,7 @@ export default function Logout() {
       let logoutResp = await fetch('/api/logout')
       
       console.log("logout response: ", await logoutResp.json())
-      router.push('/login')
+      router.push('/')
     }
 
     performLogout()

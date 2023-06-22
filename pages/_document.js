@@ -34,6 +34,7 @@ export default function Document({data}) {
     crossOrigin="anonymous"
     async
     ></script>
+    <script defer event-uuid="69b3e0bf-3e02-4d4d-8334-7fcdfdd919bd" src="https://metricswave.com/js/visits.js"></script>
     </Head>
       <body>
         <Main  />
