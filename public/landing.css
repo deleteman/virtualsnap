@@ -104,3 +104,20 @@ form .title {
 .hero-illustration img {
     box-shadow: 6px 5px 0px 2px #151a22;
 }
+
+.hero .highlight{
+  position: relative;
+  z-index: 1;
+  font-family: 'Times New Roman', Times, serif;
+}
+.hero .highlight::before{
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -5px;
+  right: -5px;
+  background-color: #ff5781;
+  transform: skew(-1deg, -2deg);
+  z-index: -1;
+}
