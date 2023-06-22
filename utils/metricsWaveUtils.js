@@ -10,6 +10,7 @@ const EVENTS = {
 }
 
 export async function logEvent(eventType, payload) {
+    try {
     let notifyResp = null;
     console.log("Sending an event to metricswave...")
     if(eventType == "login") {
@@ -34,5 +35,10 @@ export async function logEvent(eventType, payload) {
     console.log("----")
     console.log(await notifyResp.text())
     console.log("----")
+
+    } catch (e) {
+        console.log("Error sending data to metricswave...")
+        console.log(e)
+    }
 
 }
