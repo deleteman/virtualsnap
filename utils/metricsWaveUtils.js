@@ -37,7 +37,7 @@ export async function logEvent(eventType, payload) {
     console.log("----")
 
     } catch (e) {
-        console.log("Error sending data to metricswave...")
+        console.log("Error sending data to metricswave....")
         console.log(e)
     }
 
