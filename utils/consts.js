@@ -2,37 +2,37 @@
 //dev data
 export const PRICING_PLANS_DEV = [
     {
-        "id": "price_1N7hcXGFk8GiSjjaEoSXqau1",
+        "id": "price_1Nt6rQGFk8GiSjjaSSY7KTzH",
         "code": "photographer_mon",
         "credits": 10000,
         "name": "Monthly Photographer"
     },
     {
-        "id": "price_1N7hcXGFk8GiSjjaxn8hCARe",
+        "id": "price_1Nt6rQGFk8GiSjjai6n5NU1Z",
         "code": "photographer_year",
         "credits": 10000,
         "name": "Yearly Photographer"
     },
     {
-        "id": "price_1N7hdxGFk8GiSjjamUKZYNmA",
+        "id": "price_1Nt6ttGFk8GiSjjatg0V9hyT",
         "code": "designer_year",
         "credits": 1000,
         "name": "Yearly Designer"
     },
     {
-        "id": "price_1N7hWUGFk8GiSjjazokUfzDM",
+        "id": "price_1Nt6ttGFk8GiSjjannyQoxJ5",
         "code": "designer_mon",
         "credits": 1000,
         "name": "Monthly Designer"
     },
     {
-        "id": "price_1N7hd8GFk8GiSjja0oDkbIQq",
+        "id": "price_1Nt6pSGFk8GiSjjahktaZpMu",
         "code": "starter_year",
         "credits": 500,
         "name": "Yearly Starter"
     },
     {
-        "id": "price_1N7hT3GFk8GiSjja1CWoiPFm",
+        "id": "price_1Nt6pSGFk8GiSjjaC1oc8wsO",
         "code": "starter_mon",
         "credits": 500,
         "name": "Monthly Starter"
